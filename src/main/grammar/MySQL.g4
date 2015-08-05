@@ -803,9 +803,9 @@ master_file_def: MASTER_LOG_FILE_SYM EQ text_string_sys_nonewline
                | RELAY_LOG_POS_SYM EQ ulong_num ;
 
 create: CREATE opt_table_options TABLE_SYM opt_if_not_exists table_ident create2 # CreateTable
-      | CREATE opt_unique INDEX_SYM ident key_alg ON table_ident '(' key_list ')' normal_key_options opt_index_lock_algorithm # CreateIndex
-      | CREATE fulltext INDEX_SYM ident init_key_options ON table_ident '(' key_list ')' fulltext_key_options opt_index_lock_algorithm # CreateIndexFulltext
-      | CREATE spatial INDEX_SYM ident init_key_options ON table_ident '(' key_list ')' spatial_key_options opt_index_lock_algorithm # CreateIndexSpatial
+      | CREATE opt_unique INDEX_SYM ident opt_key_alg ON table_ident '(' key_list ')' normal_key_options opt_index_lock_algorithm # CreateIndex
+      | CREATE fulltext INDEX_SYM ident ON table_ident '(' key_list ')' fulltext_key_options opt_index_lock_algorithm # CreateIndexFulltext
+      | CREATE spatial INDEX_SYM ident ON table_ident '(' key_list ')' spatial_key_options opt_index_lock_algorithm # CreateIndexSpatial
       | CREATE DATABASE opt_if_not_exists ident opt_create_database_options # CreateDatabase
       | CREATE view_or_trigger_or_sp_or_event # CreateSpecial
       | CREATE USER clear_privileges grant_list # CreateUser
@@ -1476,17 +1476,21 @@ field_list: field_list_item
           | field_list ',' field_list_item ;
 
 field_list_item: column_def
-               | key_def ;
+               | key_def_wrap ;
 
 column_def: field_spec opt_check_constraint
           | field_spec references ;
 
-key_def: normal_key_type opt_ident key_alg '(' key_list ')' normal_key_options
-       | fulltext opt_key_or_index opt_ident init_key_options '(' key_list ')' fulltext_key_options
-       | spatial opt_key_or_index opt_ident init_key_options '(' key_list ')' spatial_key_options
-       | opt_constraint constraint_key_type opt_ident key_alg '(' key_list ')' normal_key_options
-       | opt_constraint FOREIGN KEY_SYM opt_ident '(' key_list ')' references
-       | opt_constraint check_constraint ;
+key_def_wrap: key_def # KeyDefinition
+            ;
+
+key_def: normal_key_type opt_ident opt_key_alg '(' key_list ')' normal_key_options # StandardIndex
+       | fulltext opt_key_or_index opt_ident '(' key_list ')' fulltext_key_options # FullTextIndex
+       | spatial opt_key_or_index opt_ident '(' key_list ')' spatial_key_options # SpatialIndex
+       | opt_constraint constraint_key_type opt_ident opt_key_alg '(' key_list ')' normal_key_options # PrimaryOrUniqueIndex
+       | opt_constraint FOREIGN KEY_SYM opt_ident '(' key_list ')' references # ForeignKey
+       | opt_constraint check_constraint # CheckConstraint
+       ;
 
 opt_check_constraint: /* empty */
                     | check_constraint ;
@@ -1759,8 +1763,9 @@ delete_option: RESTRICT
 
 normal_key_type: key_or_index ;
 
-constraint_key_type: PRIMARY_SYM KEY_SYM
-                   | UNIQUE_SYM opt_key_or_index ;
+constraint_key_type: PRIMARY_SYM KEY_SYM # PrimaryIndex
+                   | UNIQUE_SYM opt_key_or_index # UniqueIndex
+                   ;
 
 key_or_index: KEY_SYM
             | INDEX_SYM ;
@@ -1779,10 +1784,8 @@ fulltext: FULLTEXT_SYM ;
 
 spatial: SPATIAL_SYM ;
 
-init_key_options: /* empty */ ;
-
-key_alg: init_key_options
-       | init_key_options key_using_alg ;
+opt_key_alg: /* empty */
+           | key_using_alg ;
 
 normal_key_options: /* empty */
                   | normal_key_opts ;
@@ -1802,11 +1805,17 @@ spatial_key_opts: spatial_key_opt
 fulltext_key_opts: fulltext_key_opt
                  | fulltext_key_opts fulltext_key_opt ;
 
-key_using_alg: USING btree_or_rtree
-             | TYPE_SYM btree_or_rtree ;
+key_using_alg: USING index_algorithm
+             | TYPE_SYM index_algorithm ;
 
-all_key_opt: KEY_BLOCK_SIZE opt_equal ulong_num
-           | COMMENT_SYM text_string_sys ;
+all_key_opt: KEY_BLOCK_SIZE opt_equal key_block_size
+           | COMMENT_SYM key_comment ;
+
+key_block_size: ulong_num # KeyBlockSize
+              ;
+
+key_comment: text_string_sys # KeyComment
+           ;
 
 normal_key_opt: all_key_opt
               | key_using_alg ;
@@ -1816,9 +1825,13 @@ spatial_key_opt: all_key_opt ;
 fulltext_key_opt: all_key_opt
                 | WITH PARSER_SYM ident_sys ;
 
-btree_or_rtree: BTREE_SYM
-              | RTREE_SYM
-              | HASH_SYM ;
+index_algorithm: btree_or_rtree # IndexAlgorithm
+               ;
+
+btree_or_rtree: BTREE_SYM # BTreeIndexType
+              | RTREE_SYM # RTreeIndexType
+              | HASH_SYM # HashIndexType
+              ;
 
 key_list: key_list ',' key_part order_dir
         | key_part order_dir ;
@@ -1914,7 +1927,7 @@ alter_list: alter_list_item
 add_column: ADD opt_column ;
 
 alter_list_item: add_column column_def opt_place
-               | ADD key_def
+               | ADD key_def_wrap
                | add_column '(' create_field_list ')'
                | CHANGE opt_column field_ident field_spec opt_place
                | MODIFY_SYM opt_column field_ident mysqltype opt_attribute opt_place

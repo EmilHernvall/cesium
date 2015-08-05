@@ -15,5 +15,5 @@ CREATE TABLE `user` (
   `user_owner` int(10) DEFAULT NULL,
   `user_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`user_id`),
-  UNIQUE KEY `Index_1` (`user_email`)
+  UNIQUE KEY `Index_1` USING HASH (`user_email`) KEY_BLOCK_SIZE 1024 COMMENT 'test'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -88,10 +88,64 @@ public class Cesium
         }
 
         @Override
-        public void enterKey_def(MySQLParser.Key_defContext ctx)
+        public void enterKeyDefinition(MySQLParser.KeyDefinitionContext ctx)
         {
             System.out.println("KEY DEF");
             currentIndex = new Index();
+        }
+
+        @Override
+        public void enterStandardIndex(MySQLParser.StandardIndexContext ctx)
+        {
+            currentIndex.setKeyType(Index.KeyType.STANDARD);
+        }
+
+        @Override
+        public void enterFullTextIndex(MySQLParser.FullTextIndexContext ctx)
+        {
+            currentIndex.setKeyType(Index.KeyType.FULLTEXT);
+        }
+
+        @Override
+        public void enterSpatialIndex(MySQLParser.SpatialIndexContext ctx)
+        {
+            currentIndex.setKeyType(Index.KeyType.SPATIAL);
+        }
+
+        @Override
+        public void enterPrimaryIndex(MySQLParser.PrimaryIndexContext ctx)
+        {
+            currentIndex.setKeyType(Index.KeyType.PRIMARY);
+        }
+
+        @Override
+        public void enterUniqueIndex(MySQLParser.UniqueIndexContext ctx)
+        {
+            currentIndex.setKeyType(Index.KeyType.UNIQUE);
+        }
+
+        @Override
+        public void enterForeignKey(MySQLParser.ForeignKeyContext ctx)
+        {
+            currentIndex.setKeyType(Index.KeyType.FOREIGN);
+        }
+
+        @Override
+        public void enterIndexAlgorithm(MySQLParser.IndexAlgorithmContext ctx)
+        {
+            currentIndex.setAlgorithm(ctx.getText());
+        }
+
+        @Override
+        public void enterKeyBlockSize(MySQLParser.KeyBlockSizeContext ctx)
+        {
+            currentIndex.setBlockSize(ctx.getText());
+        }
+
+        @Override
+        public void enterKeyComment(MySQLParser.KeyCommentContext ctx)
+        {
+            currentIndex.setComment(ctx.getText());
         }
 
         @Override
@@ -108,7 +162,7 @@ public class Cesium
         }
 
         @Override
-        public void exitKey_def(MySQLParser.Key_defContext ctx)
+        public void exitKeyDefinition(MySQLParser.KeyDefinitionContext ctx)
         {
             currentTable.addIndex(currentIndex);
             currentIndex = null;

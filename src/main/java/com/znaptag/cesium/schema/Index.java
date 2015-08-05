@@ -5,6 +5,16 @@ import java.util.ArrayList;
 
 public class Index
 {
+    public enum KeyType
+    {
+        STANDARD,
+        FULLTEXT,
+        SPATIAL,
+        PRIMARY,
+        UNIQUE,
+        FOREIGN;
+    }
+
     public static class Part
     {
         private String name = null;
@@ -27,9 +37,12 @@ public class Index
         }
     }
 
-    private String name;
-    private boolean unique = false;
-    private List<Part> parts;
+    private String name = null;
+    private KeyType keyType = null;
+    private List<Part> parts = null;
+    private String algorithm = null;
+    private String blockSize = null;
+    private String comment = null;
 
     public Index()
     {
@@ -39,8 +52,17 @@ public class Index
     public void setName(String v) { this.name = v; }
     public String getName() { return name; }
 
-    public void setUnique(boolean v) { this.unique = v; }
-    public boolean getUnique() { return unique; }
+    public void setKeyType(KeyType v) { this.keyType = v; }
+    public KeyType getKeyType() { return keyType; }
+
+    public void setAlgorithm(String v) { this.algorithm = v; }
+    public String getAlgorithm() { return algorithm; }
+
+    public void setBlockSize(String v) { this.blockSize = v; }
+    public String getBlockSize() { return blockSize; }
+
+    public void setComment(String v) { this.comment = v; }
+    public String getComment() { return comment; }
 
     public void addPart(String name, int length)
     {
@@ -54,10 +76,22 @@ public class Index
     public String toString()
     {
         StringBuilder buffer = new StringBuilder();
-        if (name == null) {
+        if (keyType == KeyType.PRIMARY) {
             buffer.append("PRIMARY KEY ");
+        } else if (keyType == KeyType.UNIQUE) {
+            buffer.append("UNIQUE " + name + " ");
+        } else if (keyType == KeyType.FULLTEXT) {
+            buffer.append("FULLTEXT " + name + " ");
+        } else if (keyType == KeyType.SPATIAL) {
+            buffer.append("SPATIAL " + name + " ");
+        } else if (keyType == KeyType.FOREIGN) {
+            buffer.append("SPATIAL " + name + " ");
         } else {
-            buffer.append((unique ? "UNIQUE " : "INDEX ") + name);
+            buffer.append("INDEX " + name + " ");
+        }
+
+        if (algorithm != null) {
+            buffer.append("USING " + algorithm + " ");
         }
 
         buffer.append("(");
@@ -71,6 +105,13 @@ public class Index
         }
 
         buffer.append(")");
+
+        if (blockSize != null) {
+            buffer.append(" KEY_BLOCK_SIZE " + blockSize);
+        }
+        if (comment != null) {
+            buffer.append(" COMMENT " + comment);
+        }
 
         return buffer.toString();
     }
