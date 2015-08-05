@@ -1,0 +1,48 @@
+apply plugin: 'java'
+apply plugin: 'antlr'
+sourceCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+}
+
+project.ext {
+    depsDir = "build/deps"
+}
+
+dependencies {
+    antlr "org.antlr:antlr4:4.5" // use ANTLR version 4
+}
+
+task initProject {
+    File depsDirFile = new File(depsDir)
+    if (!depsDirFile.exists()) {
+        depsDirFile.mkdir();
+    }
+
+    copy {
+        from {
+            configurations.runtime.filter {
+                !new File(depsDirFile, it.getName()).exists() ||
+                new File(depsDirFile, it.getName()).lastModified() < it.lastModified()
+            }
+        }
+        into project.depsDir
+    }
+}
+
+
+compileJava.dependsOn initProject
+
+generateGrammarSource {
+    source = "src/main/grammar"
+    arguments += ["-package","com.znaptag.cesium.parser"]
+}
+
+/*jar.doFirst {
+    def manifestClasspath = configurations.runtime.collect { "lib/" + it.getName() }.join(' ')
+    manifest {
+        attributes("Class-Path": manifestClasspath)
+        attributes("Main-Class": "com.znaptag.cesium.Cesium")
+    }
+}*/

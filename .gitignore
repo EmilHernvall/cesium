@@ -1,0 +1,7 @@
+*.sw*
+errors.err
+build.sh
+tags
+/.gradle
+/old
+/build
