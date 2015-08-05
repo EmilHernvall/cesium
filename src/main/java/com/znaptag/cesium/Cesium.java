@@ -1,6 +1,8 @@
 package com.znaptag.cesium;
 
 import java.util.EnumSet;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -9,57 +11,10 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import com.znaptag.cesium.parser.*;
+import com.znaptag.cesium.schema.*;
 
 public class Cesium
 {
-    public enum MySQLType
-    {
-        INTEGER,
-        TINYINT,
-        SMALLINT,
-        MEDIUMINT,
-        BIGINT,
-        REAL,
-        DOUBLE,
-        FLOAT,
-        BIT,
-        BOOLEAN,
-        CHAR,
-        NCHAR,
-        BINARY,
-        VARCHAR,
-        NVARCHAR,
-        VARBINARY,
-        YEAR,
-        DATE,
-        TIME,
-        TIMESTAMP,
-        DATETIME,
-        TINYBLOB,
-        BLOB,
-        MEDIUMBLOB,
-        LONGBLOB,
-        TINYTEXT,
-        TEXT,
-        MEDIUMTEXT,
-        LONGTEXT,
-        DECIMAL,
-        NUMERIC,
-        FIXED,
-        ENUM,
-        SET,
-        LONG,
-        SERIAL,
-        GEOMETRY,
-        GEOMETRYCOLLECTION,
-        POINT,
-        MULTIPOINT,
-        LINESTRING,
-        MULTILINESTRING,
-        POLYGON,
-        MULTIPOLYGON;
-    }
-
     public static class ListenerImpl extends MySQLBaseListener
     {
         public enum Mode
@@ -68,7 +23,15 @@ public class Cesium
         }
 
         private Mode currentMode = null;
+
         private MySQLType currentType = null;
+        private TypeSpec currentTypeSpec = null;
+        private IntegerTypeSpec currentIntegerTypeSpec = null;
+        private CharTypeSpec currentCharTypeSpec = null;
+        private SetTypeSpec currentSetTypeSpec = null;
+
+        private Table currentTable = null;
+        private Column currentColumn = null;
 
         @Override
         public void visitErrorNode(ErrorNode node)
@@ -81,25 +44,55 @@ public class Cesium
         {
             System.out.println("CREATE TABLE");
             currentMode = Mode.CREATE_TABLE;
+            currentTable = new Table();
         }
 
         @Override
         public void exitCreateTable(MySQLParser.CreateTableContext ctx)
         {
             System.out.println("EXIT CREATE TABLE");
+            currentTable.print();
+
             currentMode = null;
+            currentTable = null;
         }
 
         @Override
         public void enterTableName(MySQLParser.TableNameContext ctx)
         {
             System.out.println("TABLE NAME " + ctx.getText());
+            currentTable.setName(ctx.getText());
+        }
+
+        @Override
+        public void enterColumn_def(MySQLParser.Column_defContext ctx)
+        {
+            System.out.println("FIELD LIST ITEM");
+            currentColumn = new Column();
+        }
+
+        @Override
+        public void exitColumn_def(MySQLParser.Column_defContext ctx)
+        {
+            if (currentTypeSpec != null) {
+                currentColumn.setTypeSpec(currentTypeSpec);
+            } else {
+                currentColumn.setTypeSpec(new TypeSpec(currentType));
+            }
+            currentTable.addColumn(currentColumn);
+            currentIntegerTypeSpec = null;
+            currentCharTypeSpec = null;
+            currentTypeSpec = null;
+            currentColumn = null;
         }
 
         @Override
         public void enterFieldName(MySQLParser.FieldNameContext ctx)
         {
             System.out.println("FIELD NAME " + ctx.getText());
+            if (currentColumn != null) {
+                currentColumn.setName(ctx.getText());
+            }
         }
 
         /*@Override
@@ -125,9 +118,52 @@ public class Cesium
          **/
 
         @Override
-        public void enterIntType(MySQLParser.IntTypeContext ctx)
+        public void enterIntegerType(MySQLParser.IntegerTypeContext ctx)
         {
             currentType = MySQLType.INTEGER;
+            currentIntegerTypeSpec = new IntegerTypeSpec(currentType);
+            currentTypeSpec = currentIntegerTypeSpec;
+
+            System.out.println("TYPE " + currentType);
+        }
+
+        @Override
+        public void enterTinyIntType(MySQLParser.TinyIntTypeContext ctx)
+        {
+            currentType = MySQLType.TINYINT;
+            currentIntegerTypeSpec = new IntegerTypeSpec(currentType);
+            currentTypeSpec = currentIntegerTypeSpec;
+
+            System.out.println("TYPE " + currentType);
+        }
+
+        @Override
+        public void enterSmallIntType(MySQLParser.SmallIntTypeContext ctx)
+        {
+            currentType = MySQLType.SMALLINT;
+            currentIntegerTypeSpec = new IntegerTypeSpec(currentType);
+            currentTypeSpec = currentIntegerTypeSpec;
+
+            System.out.println("TYPE " + currentType);
+        }
+
+        @Override
+        public void enterMediumIntType(MySQLParser.MediumIntTypeContext ctx)
+        {
+            currentType = MySQLType.MEDIUMINT;
+            currentIntegerTypeSpec = new IntegerTypeSpec(currentType);
+            currentTypeSpec = currentIntegerTypeSpec;
+
+            System.out.println("TYPE " + currentType);
+        }
+
+        @Override
+        public void enterBigIntType(MySQLParser.BigIntTypeContext ctx)
+        {
+            currentType = MySQLType.BIGINT;
+            currentIntegerTypeSpec = new IntegerTypeSpec(currentType);
+            currentTypeSpec = currentIntegerTypeSpec;
+
             System.out.println("TYPE " + currentType);
         }
 
@@ -149,6 +185,8 @@ public class Cesium
         public void enterBitType(MySQLParser.BitTypeContext ctx)
         {
             currentType = MySQLType.BIT;
+            currentIntegerTypeSpec = new IntegerTypeSpec(currentType);
+            currentTypeSpec = currentIntegerTypeSpec;
             System.out.println("TYPE " + currentType);
         }
 
@@ -177,6 +215,9 @@ public class Cesium
         public void enterCharTypeWithLength(MySQLParser.CharTypeWithLengthContext ctx)
         {
             currentType = MySQLType.CHAR;
+            currentCharTypeSpec = new CharTypeSpec(currentType);
+            currentTypeSpec = currentCharTypeSpec;
+
             System.out.println("TYPE " + currentType);
         }
 
@@ -184,6 +225,9 @@ public class Cesium
         public void enterCharType(MySQLParser.CharTypeContext ctx)
         {
             currentType = MySQLType.CHAR;
+            currentCharTypeSpec = new CharTypeSpec(currentType);
+            currentTypeSpec = currentCharTypeSpec;
+
             System.out.println("TYPE " + currentType);
         }
 
@@ -191,6 +235,9 @@ public class Cesium
         public void enterNCharTypeWithLength(MySQLParser.NCharTypeWithLengthContext ctx)
         {
             currentType = MySQLType.NCHAR;
+            currentCharTypeSpec = new CharTypeSpec(currentType);
+            currentTypeSpec = currentCharTypeSpec;
+
             System.out.println("TYPE " + currentType);
         }
 
@@ -198,6 +245,9 @@ public class Cesium
         public void enterNCharType(MySQLParser.NCharTypeContext ctx)
         {
             currentType = MySQLType.NCHAR;
+            currentCharTypeSpec = new CharTypeSpec(currentType);
+            currentTypeSpec = currentCharTypeSpec;
+
             System.out.println("TYPE " + currentType);
         }
 
@@ -205,6 +255,9 @@ public class Cesium
         public void enterBinaryTypeWithLength(MySQLParser.BinaryTypeWithLengthContext ctx)
         {
             currentType = MySQLType.BINARY;
+            currentCharTypeSpec = new CharTypeSpec(currentType);
+            currentTypeSpec = currentCharTypeSpec;
+
             System.out.println("TYPE " + currentType);
         }
 
@@ -212,6 +265,9 @@ public class Cesium
         public void enterBinaryType(MySQLParser.BinaryTypeContext ctx)
         {
             currentType = MySQLType.BINARY;
+            currentCharTypeSpec = new CharTypeSpec(currentType);
+            currentTypeSpec = currentCharTypeSpec;
+
             System.out.println("TYPE " + currentType);
         }
 
@@ -219,6 +275,9 @@ public class Cesium
         public void enterVarcharTypeWithLength(MySQLParser.VarcharTypeWithLengthContext ctx)
         {
             currentType = MySQLType.VARCHAR;
+            currentCharTypeSpec = new CharTypeSpec(currentType);
+            currentTypeSpec = currentCharTypeSpec;
+
             System.out.println("TYPE " + currentType);
         }
 
@@ -226,6 +285,9 @@ public class Cesium
         public void enterNVarcharTypeWithLength(MySQLParser.NVarcharTypeWithLengthContext ctx)
         {
             currentType = MySQLType.NVARCHAR;
+            currentCharTypeSpec = new CharTypeSpec(currentType);
+            currentTypeSpec = currentCharTypeSpec;
+
             System.out.println("TYPE " + currentType);
         }
 
@@ -233,6 +295,9 @@ public class Cesium
         public void enterVarbinaryTypeWithLength(MySQLParser.VarbinaryTypeWithLengthContext ctx)
         {
             currentType = MySQLType.VARBINARY;
+            currentCharTypeSpec = new CharTypeSpec(currentType);
+            currentTypeSpec = currentCharTypeSpec;
+
             System.out.println("TYPE " + currentType);
         }
 
@@ -366,6 +431,8 @@ public class Cesium
         public void enterEnumType(MySQLParser.EnumTypeContext ctx)
         {
             currentType = MySQLType.ENUM;
+            currentSetTypeSpec = new SetTypeSpec(currentType);
+            currentTypeSpec = currentSetTypeSpec;
             System.out.println("TYPE " + currentType);
         }
 
@@ -373,6 +440,8 @@ public class Cesium
         public void enterSetType(MySQLParser.SetTypeContext ctx)
         {
             currentType = MySQLType.SET;
+            currentSetTypeSpec = new SetTypeSpec(currentType);
+            currentTypeSpec = currentSetTypeSpec;
             System.out.println("TYPE " + currentType);
         }
 
@@ -450,7 +519,18 @@ public class Cesium
         public void enterIntegerFieldLength(MySQLParser.IntegerFieldLengthContext ctx)
         {
             System.out.println("FIELD LENGTH " + ctx.getText());
+            String txt = ctx.getText();
+            String noParen = txt.substring(1, txt.length()-1);
+            int length = Integer.parseInt(noParen);
+
+            if (currentIntegerTypeSpec != null) {
+                currentIntegerTypeSpec.setLength(length);
+            } else if (currentCharTypeSpec != null) {
+                currentCharTypeSpec.setLength(length);
+            }
         }
+
+        // Numeric Field Options
 
         @Override
         public void enterSignedFieldOption(MySQLParser.SignedFieldOptionContext ctx)
@@ -468,6 +548,122 @@ public class Cesium
         public void enterZeroFillFieldOption(MySQLParser.ZeroFillFieldOptionContext ctx)
         {
             System.out.println("FIELD OPTION ZEROFILL");
+        }
+
+        // Text/Binary field options
+        //
+        // This is messy because the grammar is messy. Here's an overview:
+        //
+        // NoCharset
+        // AsciiCharset [ AsciiText | AsciiBinary ]
+        // UnicodeCharset [ UnicodeText | UnicodeBinary ]
+        // SpecifiedCharset [ CharsetName | BinaryCharset ]
+        //                  [ NoCharsetModifier | BinaryCharsetModifier ]
+        // BinaryNoCharset
+        // BinaryWithCharset [ CharsetName | BinaryCharset ]
+
+        // NoCharset
+        @Override
+        public void enterNoCharset(MySQLParser.NoCharsetContext ctx)
+        {
+            System.out.println("NO CHARSET");
+        }
+
+        // AsciiCharset
+        @Override
+        public void enterAsciiCharset(MySQLParser.AsciiCharsetContext ctx)
+        {
+            System.out.println("ASCII CHARSET");
+        }
+
+        @Override
+        public void enterAsciiText(MySQLParser.AsciiTextContext ctx)
+        {
+            System.out.println("TEXT ASCII");
+        }
+
+        @Override
+        public void enterAsciiBinary(MySQLParser.AsciiBinaryContext ctx)
+        {
+            System.out.println("BINARY ASCII");
+        }
+
+        // UnicodeCharset
+        @Override
+        public void enterUnicodeCharset(MySQLParser.UnicodeCharsetContext ctx)
+        {
+            System.out.println("UNICODE CHARSET");
+        }
+
+        @Override
+        public void enterUnicodeText(MySQLParser.UnicodeTextContext ctx)
+        {
+            System.out.println("TEXT UNICODE");
+        }
+
+        @Override
+        public void enterUnicodeBinary(MySQLParser.UnicodeBinaryContext ctx)
+        {
+            System.out.println("BINARY UNICODE");
+        }
+
+        @Override
+        public void enterBinaryCharsetModifier(MySQLParser.BinaryCharsetModifierContext ctx)
+        {
+            System.out.println("BINARY CHARSET MODIFIER");
+        }
+
+        // SpecifiedCharset
+        @Override
+        public void enterSpecifiedCharset(MySQLParser.SpecifiedCharsetContext ctx)
+        {
+            System.out.println("SPECIFIED CHARSET");
+        }
+
+        @Override
+        public void enterCharsetName(MySQLParser.CharsetNameContext ctx)
+        {
+            System.out.println("CHARSET NAME: " + ctx.getText());
+        }
+
+        @Override
+        public void enterBinaryCharset(MySQLParser.BinaryCharsetContext ctx)
+        {
+            System.out.println("CHARSET NAME: BINARY");
+        }
+
+        // BinaryNoCharset
+        @Override
+        public void enterBinaryNoCharset(MySQLParser.BinaryNoCharsetContext ctx)
+        {
+            System.out.println("BINARY NO CHARSET");
+        }
+
+        // BinaryWithCharset
+        @Override
+        public void enterBinaryWithCharset(MySQLParser.BinaryWithCharsetContext ctx)
+        {
+            System.out.println("BINARY CHARSET");
+        }
+
+        @Override
+        public void enterTextString(MySQLParser.TextStringContext ctx)
+        {
+            if (currentSetTypeSpec != null) {
+                currentSetTypeSpec.addString(ctx.getText());
+            }
+        }
+
+        @Override
+        public void enterTextStringHex(MySQLParser.TextStringHexContext ctx)
+        {
+            throw new UnsupportedOperationException("Not implemented");
+        }
+
+        @Override
+        public void enterTextStringBin(MySQLParser.TextStringBinContext ctx)
+        {
+            throw new UnsupportedOperationException("Not implemented");
         }
     }
 

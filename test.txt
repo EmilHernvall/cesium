@@ -11,7 +11,7 @@ CREATE TABLE `user` (
   `user_emailexpires` int(10) unsigned DEFAULT NULL,
   `user_failedlogin` int(10) unsigned NOT NULL DEFAULT '0',
   `user_failedcount` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `user_options` varchar(2048) NOT NULL DEFAULT '',
+  `user_options` varchar(2048) CHARSET utf8 COLLATE utf8 NOT NULL DEFAULT '',
   `user_owner` int(10) DEFAULT NULL,
   `user_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`user_id`),

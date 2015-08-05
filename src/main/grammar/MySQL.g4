@@ -1500,7 +1500,7 @@ constraint: CONSTRAINT opt_ident ;
 
 field_spec: field_ident mysqltype opt_attribute ;
 
-mysqltype: int_type opt_field_length field_options # IntType
+mysqltype: int_type opt_field_length field_options # IntTypes
     | real_type opt_precision field_options # RealType
     | FLOAT_SYM float_options field_options # FloatType
     | BIT_SYM # BitType
@@ -1565,11 +1565,12 @@ nvarchar: NATIONAL_SYM VARCHAR
         | NATIONAL_SYM CHAR_SYM VARYING
         | NCHAR_SYM VARYING ;
 
-int_type: INT_SYM
-        | TINYINT
-        | SMALLINT
-        | MEDIUMINT
-        | BIGINT ;
+int_type: INT_SYM # IntegerType
+        | TINYINT # TinyIntType
+        | SMALLINT # SmallIntType
+        | MEDIUMINT # MediumIntType
+        | BIGINT # BigIntType
+        ;
 
 real_type: REAL
          | DOUBLE_SYM
@@ -1645,8 +1646,9 @@ now_or_signed_literal: now
 charset: CHAR_SYM SET
        | CHARSET ;
 
-charset_name: ident_or_text
-            | BINARY ;
+charset_name: ident_or_text # CharsetName
+            | BINARY # BinaryCharset
+            ;
 
 charset_name_or_default: charset_name
                        | DEFAULT ;
@@ -1671,24 +1673,28 @@ collation_name_or_default: collation_name
 opt_default: /* empty */
            | DEFAULT ;
 
-ascii: ASCII_SYM
-     | BINARY ASCII_SYM
-     | ASCII_SYM BINARY ;
+ascii: ASCII_SYM # AsciiText
+     | BINARY ASCII_SYM # AsciiBinary
+     | ASCII_SYM BINARY # AsciiBinary
+     ;
 
-mysqlunicode: UNICODE_SYM
-       | UNICODE_SYM BINARY
-       | BINARY UNICODE_SYM ;
+mysqlunicode: UNICODE_SYM # UnicodeText
+       | UNICODE_SYM BINARY # UnicodeBinary
+       | BINARY UNICODE_SYM # UnicodeBinary
+       ;
 
-opt_binary: /* empty */
-          | ascii
-          | mysqlunicode
-          | BYTE_SYM
-          | charset charset_name opt_bin_mod
-          | BINARY
-          | BINARY charset charset_name ;
+opt_binary: /* empty */ # NoCharset
+          | ascii # AsciiCharset
+          | mysqlunicode # UnicodeCharset
+          | BYTE_SYM # ByteCharset
+          | charset charset_name opt_bin_mod # SpecifiedCharset
+          | BINARY # BinaryNoCharset
+          | BINARY charset charset_name # BinaryWithCharset
+          ;
 
-opt_bin_mod: /* empty */
-           | BINARY ;
+opt_bin_mod: /* empty */ # NoCharsetModifier
+           | BINARY # BinaryCharsetModifier
+           ;
 
 ws_nweights: '(' real_ulong_num ')' ;
 
@@ -3075,9 +3081,10 @@ text_literal: TEXT_STRING
             | UNDERSCORE_CHARSET TEXT_STRING
             | text_literal text_string_literal ;
 
-text_string: text_string_literal
-           | HEX_NUM
-           | BIN_NUM ;
+text_string: text_string_literal # TextString
+           | HEX_NUM # TextStringHex
+           | BIN_NUM # TextStringBin
+           ;
 
 param_marker: PARAM_MARKER ;
 
