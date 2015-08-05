@@ -1618,30 +1618,35 @@ opt_attribute: /* empty */
 opt_attribute_list: opt_attribute_list attribute
                   | attribute ;
 
-attribute: NULL_SYM
-         | mysqlnot NULL_SYM
-         | DEFAULT now_or_signed_literal
-         | ON UPDATE_SYM now
-         | AUTO_INC
-         | SERIAL_SYM DEFAULT VALUE_SYM
-         | opt_primary KEY_SYM
-         | UNIQUE_SYM
-         | UNIQUE_SYM KEY_SYM
-         | COMMENT_SYM text_string_sys
-         | COLLATE_SYM collation_name
-         | COLUMN_FORMAT_SYM DEFAULT
-         | COLUMN_FORMAT_SYM FIXED_SYM
-         | COLUMN_FORMAT_SYM DYNAMIC_SYM
-         | STORAGE_SYM DEFAULT
-         | STORAGE_SYM DISK_SYM
-         | STORAGE_SYM MEMORY_SYM ;
+attribute: NULL_SYM # NullAttribute
+         | mysqlnot NULL_SYM # NotNullAttribute
+         | DEFAULT now_or_signed_literal # DefaultAttribute
+         | ON UPDATE_SYM now # OnUpdateAttribute
+         | AUTO_INC # AutoIncAttribute
+         | SERIAL_SYM DEFAULT VALUE_SYM # SerialDefaultValueAttribute
+         | opt_primary KEY_SYM # PrimaryKeyAttribute
+         | UNIQUE_SYM # UniqueKeyAttribute
+         | UNIQUE_SYM KEY_SYM # UniqueKeyAttribute
+         | COMMENT_SYM comment_text # CommentAttribute
+         | COLLATE_SYM collation_name # CollateAttribute
+         | COLUMN_FORMAT_SYM DEFAULT # ColumnFormatDefaultAttribute
+         | COLUMN_FORMAT_SYM FIXED_SYM # ColumnFormatFixedAttribute
+         | COLUMN_FORMAT_SYM DYNAMIC_SYM # ColumnFormatDynamicAttribute
+         | STORAGE_SYM DEFAULT # StorageDefaultAttribute
+         | STORAGE_SYM DISK_SYM # StorageDiskAttribute
+         | STORAGE_SYM MEMORY_SYM # StorageMemoryAttribute
+         ;
+
+comment_text: text_string_sys # CommentText
+            ;
 
 type_with_opt_collate: mysqltype opt_collate ;
 
 now: NOW_SYM func_datetime_precision ;
 
-now_or_signed_literal: now
-                     | signed_literal ;
+now_or_signed_literal: now # CurrentTimeDefault
+                     | signed_literal # SpecifiedDefault
+                     ;
 
 charset: CHAR_SYM SET
        | CHARSET ;
@@ -1662,7 +1667,8 @@ old_or_new_charset_name: ident_or_text
 old_or_new_charset_name_or_default: old_or_new_charset_name
                                   | DEFAULT ;
 
-collation_name: ident_or_text ;
+collation_name: ident_or_text # CollationName
+              ;
 
 opt_collate: /* empty */
            | COLLATE_SYM collation_name_or_default ;
@@ -1817,8 +1823,9 @@ btree_or_rtree: BTREE_SYM
 key_list: key_list ',' key_part order_dir
         | key_part order_dir ;
 
-key_part: ident
-        | ident '(' NUM ')' ;
+key_part: ident # KeyPart
+        | ident '(' NUM ')' # KeyPartWithLength
+        ;
 
 opt_ident: /* empty */
          | field_ident ;

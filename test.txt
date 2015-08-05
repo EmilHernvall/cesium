@@ -1,5 +1,5 @@
 CREATE TABLE `user` (
-  `user_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'main counter',
   `user_email` varchar(200) NOT NULL,
   `user_password` char(120) DEFAULT NULL,
   `user_fullname` varchar(100) NOT NULL,

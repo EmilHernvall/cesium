@@ -32,6 +32,7 @@ public class Cesium
 
         private Table currentTable = null;
         private Column currentColumn = null;
+        private Index currentIndex = null;
 
         @Override
         public void visitErrorNode(ErrorNode node)
@@ -67,7 +68,7 @@ public class Cesium
         @Override
         public void enterColumn_def(MySQLParser.Column_defContext ctx)
         {
-            System.out.println("FIELD LIST ITEM");
+            System.out.println("COLUMN DEF");
             currentColumn = new Column();
         }
 
@@ -87,11 +88,40 @@ public class Cesium
         }
 
         @Override
+        public void enterKey_def(MySQLParser.Key_defContext ctx)
+        {
+            System.out.println("KEY DEF");
+            currentIndex = new Index();
+        }
+
+        @Override
+        public void enterKeyPart(MySQLParser.KeyPartContext ctx)
+        {
+            System.out.println("KEY PART " + ctx.getText());
+            currentIndex.addPart(ctx.getText(), 0);
+        }
+
+        @Override
+        public void enterKeyPartWithLength(MySQLParser.KeyPartWithLengthContext ctx)
+        {
+            System.out.println("KEY PART WITH LENGTH " + ctx.getText());
+        }
+
+        @Override
+        public void exitKey_def(MySQLParser.Key_defContext ctx)
+        {
+            currentTable.addIndex(currentIndex);
+            currentIndex = null;
+        }
+
+        @Override
         public void enterFieldName(MySQLParser.FieldNameContext ctx)
         {
             System.out.println("FIELD NAME " + ctx.getText());
             if (currentColumn != null) {
                 currentColumn.setName(ctx.getText());
+            } else if (currentIndex != null) {
+                currentIndex.setName(ctx.getText());
             }
         }
 
@@ -100,12 +130,6 @@ public class Cesium
         {
             System.out.println("FIELD OPTION " + ctx.getText());
         }*/
-
-        @Override
-        public void enterAttribute(MySQLParser.AttributeContext ctx)
-        {
-            System.out.println("ATTRIBUTE " + ctx.getText());
-        }
 
         @Override
         public void enterCreate_table_option(MySQLParser.Create_table_optionContext ctx)
@@ -530,6 +554,92 @@ public class Cesium
             }
         }
 
+        // Field Attributes
+
+        @Override
+        public void enterNullAttribute(MySQLParser.NullAttributeContext ctx)
+        {
+        }
+
+        @Override
+        public void enterNotNullAttribute(MySQLParser.NotNullAttributeContext ctx)
+        {
+            currentColumn.setAllowNull(false);
+        }
+
+        @Override
+        public void enterDefaultAttribute(MySQLParser.DefaultAttributeContext ctx)
+        {
+        }
+
+        @Override
+        public void enterCurrentTimeDefault(MySQLParser.CurrentTimeDefaultContext ctx)
+        {
+            currentColumn.setDefaultValue("CURRENT_TIME");
+        }
+
+        @Override
+        public void enterSpecifiedDefault(MySQLParser.SpecifiedDefaultContext ctx)
+        {
+            currentColumn.setDefaultValue(ctx.getText());
+        }
+
+        @Override
+        public void enterOnUpdateAttribute(MySQLParser.OnUpdateAttributeContext ctx)
+        {
+        }
+
+        @Override
+        public void enterAutoIncAttribute(MySQLParser.AutoIncAttributeContext ctx)
+        {
+            if (currentIntegerTypeSpec == null) {
+                throw new RuntimeException("ERROR 1063 (42000): Incorrect column specifier");
+            }
+            currentColumn.setAutoIncrement(true);
+        }
+
+        @Override
+        public void enterSerialDefaultValueAttribute(MySQLParser.SerialDefaultValueAttributeContext ctx)
+        {
+            currentColumn.setAllowNull(false);
+            currentColumn.setAutoIncrement(true);
+            currentColumn.setUniqueKey(true);
+        }
+
+        @Override
+        public void enterPrimaryKeyAttribute(MySQLParser.PrimaryKeyAttributeContext ctx)
+        {
+            currentColumn.setPrimaryKey(true);
+        }
+
+        @Override
+        public void enterUniqueKeyAttribute(MySQLParser.UniqueKeyAttributeContext ctx)
+        {
+            currentColumn.setUniqueKey(true);
+        }
+
+        @Override
+        public void enterCommentAttribute(MySQLParser.CommentAttributeContext ctx)
+        {
+        }
+
+        @Override
+        public void enterCommentText(MySQLParser.CommentTextContext ctx)
+        {
+            currentColumn.setComment(ctx.getText());
+        }
+
+        @Override
+        public void enterCollateAttribute(MySQLParser.CollateAttributeContext ctx)
+        {
+        }
+
+        @Override
+        public void enterCollationName(MySQLParser.CollationNameContext ctx)
+        {
+            currentColumn.setCollate(ctx.getText());
+        }
+
         // Numeric Field Options
 
         @Override
@@ -542,12 +652,15 @@ public class Cesium
         public void enterUnsignedFieldOption(MySQLParser.UnsignedFieldOptionContext ctx)
         {
             System.out.println("FIELD OPTION UNSIGNED");
+            currentIntegerTypeSpec.setSigned(false);
         }
 
         @Override
         public void enterZeroFillFieldOption(MySQLParser.ZeroFillFieldOptionContext ctx)
         {
             System.out.println("FIELD OPTION ZEROFILL");
+            currentIntegerTypeSpec.setZeroFill(true);
+            currentIntegerTypeSpec.setSigned(false); // incompatible with zerofill
         }
 
         // Text/Binary field options
