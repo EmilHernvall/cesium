@@ -1500,54 +1500,56 @@ constraint: CONSTRAINT opt_ident ;
 
 field_spec: field_ident mysqltype opt_attribute ;
 
-mysqltype: int_type opt_field_length field_options
-    | real_type opt_precision field_options
-    | FLOAT_SYM float_options field_options
-    | BIT_SYM
-    | BIT_SYM field_length
-    | BOOL_SYM
-    | BOOLEAN_SYM
-    | mysqlchar field_length opt_binary
-    | mysqlchar opt_binary
-    | nchar field_length opt_bin_mod
-    | nchar opt_bin_mod
-    | BINARY field_length
-    | BINARY
-    | varchar field_length opt_binary
-    | nvarchar field_length opt_bin_mod
-    | VARBINARY field_length
-    | YEAR_SYM opt_field_length field_options
-    | DATE_SYM
-    | TIME_SYM type_datetime_precision
-    | TIMESTAMP type_datetime_precision
-    | DATETIME type_datetime_precision
-    | TINYBLOB
-    | BLOB_SYM opt_field_length
-    | spatial_type
-    | MEDIUMBLOB
-    | LONGBLOB
-    | LONG_SYM VARBINARY
-    | LONG_SYM varchar opt_binary
-    | TINYTEXT opt_binary
-    | TEXT_SYM opt_field_length opt_binary
-    | MEDIUMTEXT opt_binary
-    | LONGTEXT opt_binary
-    | DECIMAL_SYM float_options field_options
-    | NUMERIC_SYM float_options field_options
-    | FIXED_SYM float_options field_options
-    | ENUM '(' string_list ')' opt_binary
-    | SET '(' string_list ')' opt_binary
-    | LONG_SYM opt_binary
-    | SERIAL_SYM ;
+mysqltype: int_type opt_field_length field_options # IntType
+    | real_type opt_precision field_options # RealType
+    | FLOAT_SYM float_options field_options # FloatType
+    | BIT_SYM # BitType
+    | BIT_SYM field_length # BitTypeWithLength
+    | BOOL_SYM # BoolType
+    | BOOLEAN_SYM # BooleanType
+    | mysqlchar field_length opt_binary # CharTypeWithLength
+    | mysqlchar opt_binary # CharType
+    | nchar field_length opt_bin_mod # NCharTypeWithLength
+    | nchar opt_bin_mod # NCharType
+    | BINARY field_length # BinaryTypeWithLength
+    | BINARY # BinaryType
+    | varchar field_length opt_binary # VarcharTypeWithLength
+    | nvarchar field_length opt_bin_mod # NVarcharTypeWithLength
+    | VARBINARY field_length # VarbinaryTypeWithLength
+    | YEAR_SYM opt_field_length field_options # YearType
+    | DATE_SYM # DateType
+    | TIME_SYM type_datetime_precision # TimeType
+    | TIMESTAMP type_datetime_precision # TimestampType
+    | DATETIME type_datetime_precision # DateTimeType
+    | TINYBLOB # TinyBlobType
+    | BLOB_SYM opt_field_length # BlobType
+    | spatial_type # SpatialType
+    | MEDIUMBLOB # MediumBlobType
+    | LONGBLOB # LongBlobType
+    | LONG_SYM VARBINARY # LongVarbinaryType
+    | LONG_SYM varchar opt_binary # LongVarcharType
+    | TINYTEXT opt_binary # TinyTextType
+    | TEXT_SYM opt_field_length opt_binary # TextType
+    | MEDIUMTEXT opt_binary # MediumTextType
+    | LONGTEXT opt_binary # LongTextType
+    | DECIMAL_SYM float_options field_options # DecimalType
+    | NUMERIC_SYM float_options field_options # NumericType
+    | FIXED_SYM float_options field_options # FixedType
+    | ENUM '(' string_list ')' opt_binary # EnumType
+    | SET '(' string_list ')' opt_binary # SetType
+    | LONG_SYM opt_binary # LongType
+    | SERIAL_SYM # SerialType
+    ;
 
-spatial_type: GEOMETRY_SYM
-            | GEOMETRYCOLLECTION
-            | POINT_SYM
-            | MULTIPOINT
-            | LINESTRING
-            | MULTILINESTRING
-            | POLYGON
-            | MULTIPOLYGON ;
+spatial_type: GEOMETRY_SYM # GeometryType
+            | GEOMETRYCOLLECTION # GeometryCollectionType
+            | POINT_SYM # PointType
+            | MULTIPOINT # MultiPointType
+            | LINESTRING # LineStringType
+            | MULTILINESTRING # MultiLineStringType
+            | POLYGON # PolygonType
+            | MULTIPOLYGON # MultiPolygonType
+            ;
 
 mysqlchar: CHAR_SYM ;
 
@@ -1592,14 +1594,16 @@ field_options: /* empty */
 field_opt_list: field_opt_list field_option
               | field_option ;
 
-field_option: SIGNED_SYM
-            | UNSIGNED
-            | ZEROFILL ;
+field_option: SIGNED_SYM # SignedFieldOption
+            | UNSIGNED # UnsignedFieldOption
+            | ZEROFILL # ZeroFillFieldOption
+            ;
 
-field_length: '(' LONG_NUM ')'
-            | '(' ULONGLONG_NUM ')'
-            | '(' DECIMAL_NUM ')'
-            | '(' NUM ')' ;
+field_length: '(' LONG_NUM ')' # IntegerFieldLength
+            | '(' ULONGLONG_NUM ')' # IntegerFieldLength
+            | '(' DECIMAL_NUM ')' # DecimalFieldLength
+            | '(' NUM ')' # IntegerFieldLength
+            ;
 
 opt_field_length: /* empty */
                 | field_length ;
@@ -3120,14 +3124,16 @@ simple_ident_q: ident '.' ident
               | '.' ident '.' ident
               | ident '.' ident '.' ident ;
 
-field_ident: ident
-           | ident '.' ident '.' ident
-           | ident '.' ident
-           | '.' ident ;
+field_ident: ident # FieldName
+           | ident '.' ident '.' ident # FieldName
+           | ident '.' ident # FieldName
+           | '.' ident # FieldName
+           ;
 
-table_ident: ident
-           | ident '.' ident
-           | '.' ident ;
+table_ident: ident # TableName
+           | ident '.' ident # TableName
+           | '.' ident # TableName
+           ;
 
 table_ident_opt_wild: ident opt_wild
                     | ident '.' ident opt_wild ;

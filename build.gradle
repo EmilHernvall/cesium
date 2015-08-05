@@ -11,7 +11,7 @@ project.ext {
 }
 
 dependencies {
-    antlr "org.antlr:antlr4:4.5" // use ANTLR version 4
+    antlr "org.antlr:antlr4:4.5.1" // use ANTLR version 4
 }
 
 task initProject {
@@ -36,6 +36,7 @@ compileJava.dependsOn initProject
 
 generateGrammarSource {
     source = "src/main/grammar"
+    includes = ["MySQL.g4"]
     arguments += ["-package","com.znaptag.cesium.parser"]
 }
 

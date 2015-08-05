@@ -1,6 +1,19 @@
-CREATE TABLE user (
-    user_id INT UNSIGNED AUTO_INCREMENT,
-    user_email VARCHAR (255) NOT NULL,
-    user_password VARCHAR (64) NOT NULL,
-    PRIMARY KEY (user_id)
-) ENGINE=InnoDB;
+CREATE TABLE `user` (
+  `user_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_email` varchar(200) NOT NULL,
+  `user_password` char(120) DEFAULT NULL,
+  `user_fullname` varchar(100) NOT NULL,
+  `user_active` enum('0','1') NOT NULL DEFAULT '0',
+  `user_type` enum('admin','advertiser','publisher') DEFAULT NULL,
+  `user_fbid` bigint(20) DEFAULT NULL,
+  `user_siteurl` varchar(512) DEFAULT NULL,
+  `user_emailtoken` char(64) DEFAULT NULL,
+  `user_emailexpires` int(10) unsigned DEFAULT NULL,
+  `user_failedlogin` int(10) unsigned NOT NULL DEFAULT '0',
+  `user_failedcount` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `user_options` varchar(2048) NOT NULL DEFAULT '',
+  `user_owner` int(10) DEFAULT NULL,
+  `user_deleted` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `Index_1` (`user_email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
