@@ -21,13 +21,25 @@ public class Cesium
     {
         public enum Mode
         {
-            CREATE_TABLE;
+            CREATE_TABLE,
+            ALTER_TABLE;
+        }
+
+        public enum AlterTableMode
+        {
+            ADD_COLUMN,
+            CHANGE_COLUMN,
+            MODIFY_COLUMN;
         }
 
         private Mode currentMode = null;
 
         private Statement currentStatement = null;
         private CreateTableStatement currentCreateTableStatement = null;
+
+        private AlterTableMode currentAlterTableMode = null;
+        private AlterTableStatement currentAlterTableStatement = null;
+        private String oldColumnName = null;
 
         private Table currentTable = null;
         private Column currentColumn = null;
@@ -40,6 +52,13 @@ public class Cesium
         private SetTypeSpec currentSetTypeSpec = null;
 
         private boolean hasData = false;
+
+        private List<Statement> statements = null;
+
+        public ListenerImpl()
+        {
+            statements = new ArrayList<>();
+        }
 
         public boolean hasData() { return hasData; }
         public void reset() { hasData = false; }
@@ -62,6 +81,7 @@ public class Cesium
             //System.out.println("CREATE TABLE");
             currentMode = Mode.CREATE_TABLE;
             currentCreateTableStatement = new CreateTableStatement();
+            currentStatement = currentCreateTableStatement;
             currentTable = new Table();
         }
 
@@ -72,10 +92,115 @@ public class Cesium
             currentCreateTableStatement.setTableDefinition(currentTable);
             currentCreateTableStatement.print();
 
+            statements.add(currentStatement);
+
             currentMode = null;
             currentTable = null;
             currentCreateTableStatement = null;
+            currentStatement = null;
         }
+
+        //
+        // Alter table {{
+        //
+
+        @Override
+        public void enterAlterTable(MySQLParser.AlterTableContext ctx)
+        {
+            System.out.println(ctx.getText());
+            currentMode = Mode.ALTER_TABLE;
+            currentAlterTableStatement = new AlterTableStatement();
+            currentStatement = currentAlterTableStatement;
+        }
+
+        @Override
+        public void enterAddColumn(MySQLParser.AddColumnContext ctx)
+        {
+            currentAlterTableMode = AlterTableMode.ADD_COLUMN;
+        }
+
+        @Override
+        public void exitAddColumn(MySQLParser.AddColumnContext ctx)
+        {
+            currentAlterTableMode = null;
+        }
+
+        @Override
+        public void enterChangeColumn(MySQLParser.ChangeColumnContext ctx)
+        {
+            currentAlterTableMode = AlterTableMode.CHANGE_COLUMN;
+            currentColumn = new Column();
+        }
+
+        @Override
+        public void enterChangeColumnName(MySQLParser.ChangeColumnNameContext ctx)
+        {
+            oldColumnName = ctx.getText();
+        }
+
+        @Override
+        public void exitChangeColumn(MySQLParser.ChangeColumnContext ctx)
+        {
+            if (currentTypeSpec != null) {
+                currentColumn.setTypeSpec(currentTypeSpec);
+            } else {
+                currentColumn.setTypeSpec(new TypeSpec(currentType));
+            }
+
+            AlterTableStatement.ChangeColumnAction action = new AlterTableStatement.ChangeColumnAction();
+            action.setOldName(oldColumnName);
+            action.setColumnDefinition(currentColumn);
+            currentAlterTableStatement.addAction(action);
+
+            currentIntegerTypeSpec = null;
+            currentCharTypeSpec = null;
+            currentTypeSpec = null;
+            currentColumn = null;
+            currentAlterTableMode = null;
+        }
+
+        @Override
+        public void enterModifyColumn(MySQLParser.ModifyColumnContext ctx)
+        {
+            currentAlterTableMode = AlterTableMode.MODIFY_COLUMN;
+            currentColumn = new Column();
+        }
+
+        @Override
+        public void exitModifyColumn(MySQLParser.ModifyColumnContext ctx)
+        {
+            if (currentTypeSpec != null) {
+                currentColumn.setTypeSpec(currentTypeSpec);
+            } else {
+                currentColumn.setTypeSpec(new TypeSpec(currentType));
+            }
+
+            AlterTableStatement.ModifyColumnAction action = new AlterTableStatement.ModifyColumnAction();
+            action.setColumnDefinition(currentColumn);
+            currentAlterTableStatement.addAction(action);
+
+            currentIntegerTypeSpec = null;
+            currentCharTypeSpec = null;
+            currentTypeSpec = null;
+            currentColumn = null;
+            currentAlterTableMode = null;
+        }
+
+        @Override
+        public void exitAlterTable(MySQLParser.AlterTableContext ctx)
+        {
+            currentAlterTableStatement.print();
+
+            statements.add(currentStatement);
+
+            currentMode = null;
+            currentAlterTableStatement = null;
+            currentStatement = null;
+        }
+
+        //
+        // }} Exit alter table
+        //
 
         @Override
         public void enterTableName(MySQLParser.TableNameContext ctx)
@@ -85,7 +210,12 @@ public class Cesium
             if (name.startsWith("`") && name.endsWith("`")) {
                 name = name.substring(1, name.length()-1);
             }
-            currentTable.setName(name);
+
+            if (currentMode == Mode.CREATE_TABLE) {
+                currentTable.setName(name);
+            } else if (currentMode == Mode.ALTER_TABLE) {
+                currentAlterTableStatement.setTableName(name);
+            }
         }
 
         @Override
@@ -103,7 +233,17 @@ public class Cesium
             } else {
                 currentColumn.setTypeSpec(new TypeSpec(currentType));
             }
-            currentTable.addColumn(currentColumn);
+
+            if (currentMode == Mode.CREATE_TABLE) {
+                currentTable.addColumn(currentColumn);
+            } else if (currentMode == Mode.ALTER_TABLE) {
+                if (currentAlterTableMode == AlterTableMode.ADD_COLUMN) {
+                    AlterTableStatement.AddColumnAction action = new AlterTableStatement.AddColumnAction();
+                    action.setColumnDefinition(currentColumn);
+                    currentAlterTableStatement.addAction(action);
+                }
+            }
+
             currentIntegerTypeSpec = null;
             currentCharTypeSpec = null;
             currentTypeSpec = null;

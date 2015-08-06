@@ -1850,7 +1850,7 @@ opt_component: /* empty */
 string_list: text_string
            | string_list ',' text_string ;
 
-alter: ALTER opt_ignore TABLE_SYM table_ident alter_commands # AlterTable
+alter: ALTER opt_ignore TABLE_SYM table_name alter_commands # AlterTable
      | ALTER DATABASE ident_or_empty create_database_options # AlterDatabase
      | ALTER DATABASE ident UPGRADE_SYM DATA_SYM DIRECTORY_SYM NAME_SYM # AlterDatabase
      | ALTER PROCEDURE_SYM sp_name sp_a_chistics # AlterProcedure
@@ -1928,26 +1928,30 @@ alter_list: alter_list_item
 
 add_column: ADD opt_column ;
 
-alter_list_item: add_column column_def opt_place
-               | ADD key_def_wrap
-               | add_column '(' create_field_list ')'
-               | CHANGE opt_column field_ident field_spec opt_place
-               | MODIFY_SYM opt_column field_ident mysqltype opt_attribute opt_place
-               | DROP opt_column field_ident opt_restrict
-               | DROP FOREIGN KEY_SYM field_ident
-               | DROP PRIMARY_SYM KEY_SYM
-               | DROP key_or_index field_ident
-               | DISABLE_SYM KEYS
-               | ENABLE_SYM KEYS
-               | ALTER opt_column field_ident SET DEFAULT signed_literal
-               | ALTER opt_column field_ident DROP DEFAULT
-               | RENAME opt_to table_ident
-               | CONVERT_SYM TO_SYM charset charset_name_or_default opt_collate
-               | create_table_options_space_separated
-               | FORCE_SYM
-               | alter_order_clause
-               | alter_algorithm_option
-               | alter_lock_option ;
+alter_list_item: add_column column_def opt_place # AddColumn
+               | ADD key_def_wrap # AddIndex
+               | add_column '(' create_field_list ')' # AddColumns
+               | CHANGE opt_column change_column_name field_spec opt_place # ChangeColumn
+               | MODIFY_SYM opt_column field_ident mysqltype opt_attribute opt_place # ModifyColumn
+               | DROP opt_column field_ident opt_restrict # DropColumn
+               | DROP FOREIGN KEY_SYM field_ident # DropForeignKey
+               | DROP PRIMARY_SYM KEY_SYM # DropPrimaryKey
+               | DROP key_or_index field_ident # DropKey
+               | DISABLE_SYM KEYS # DisableKeys
+               | ENABLE_SYM KEYS # EnableKeys
+               | ALTER opt_column field_ident SET DEFAULT signed_literal # AlterColumn
+               | ALTER opt_column field_ident DROP DEFAULT # AlterColumn
+               | RENAME opt_to table_ident # RenameTable
+               | CONVERT_SYM TO_SYM charset charset_name_or_default opt_collate # ConvertTo
+               | create_table_options_space_separated # AlterCreateOptions
+               | FORCE_SYM # AlterForce
+               | alter_order_clause # AlterOrderBy
+               | alter_algorithm_option # AlterAlgorithm
+               | alter_lock_option # AlterLock
+               ;
+
+change_column_name: field_ident # ChangeColumnName
+                  ;
 
 opt_index_lock_algorithm: /* empty */
                         | alter_lock_option
