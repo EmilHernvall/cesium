@@ -686,8 +686,9 @@ query: EOF
 opt_end_of_input: /* empty */
                 | EOF ;
 
-verb_clause: statement
-           | begin ;
+verb_clause: statement # StandardStatement
+           | begin # BeginStatement
+           ;
 
 statement: alter
          | analyze
@@ -1849,20 +1850,21 @@ opt_component: /* empty */
 string_list: text_string
            | string_list ',' text_string ;
 
-alter: ALTER opt_ignore TABLE_SYM table_ident alter_commands
-     | ALTER DATABASE ident_or_empty create_database_options
-     | ALTER DATABASE ident UPGRADE_SYM DATA_SYM DIRECTORY_SYM NAME_SYM
-     | ALTER PROCEDURE_SYM sp_name sp_a_chistics
-     | ALTER FUNCTION_SYM sp_name sp_a_chistics
-     | ALTER view_algorithm definer_opt view_tail
-     | ALTER definer_opt view_tail
-     | ALTER definer_opt EVENT_SYM sp_name ev_alter_on_schedule_completion opt_ev_rename_to opt_ev_status opt_ev_comment opt_ev_sql_stmt
-     | ALTER TABLESPACE alter_tablespace_info
-     | ALTER LOGFILE_SYM GROUP_SYM alter_logfile_group_info
-     | ALTER TABLESPACE change_tablespace_info
-     | ALTER TABLESPACE change_tablespace_access
-     | ALTER SERVER_SYM ident_or_text OPTIONS_SYM '(' server_options_list ')'
-     | ALTER USER clear_privileges alter_user_list ;
+alter: ALTER opt_ignore TABLE_SYM table_ident alter_commands # AlterTable
+     | ALTER DATABASE ident_or_empty create_database_options # AlterDatabase
+     | ALTER DATABASE ident UPGRADE_SYM DATA_SYM DIRECTORY_SYM NAME_SYM # AlterDatabase
+     | ALTER PROCEDURE_SYM sp_name sp_a_chistics # AlterProcedure
+     | ALTER FUNCTION_SYM sp_name sp_a_chistics # AlterFunction
+     | ALTER view_algorithm definer_opt view_tail # AlterView
+     | ALTER definer_opt view_tail # AlterView
+     | ALTER definer_opt EVENT_SYM sp_name ev_alter_on_schedule_completion opt_ev_rename_to opt_ev_status opt_ev_comment opt_ev_sql_stmt # AlterEvent
+     | ALTER TABLESPACE alter_tablespace_info # AlterTableSpace
+     | ALTER LOGFILE_SYM GROUP_SYM alter_logfile_group_info # AlterLogFile
+     | ALTER TABLESPACE change_tablespace_info # AlterTableSpace
+     | ALTER TABLESPACE change_tablespace_access # AlterTableSpace
+     | ALTER SERVER_SYM ident_or_text OPTIONS_SYM '(' server_options_list ')' # AlterServer
+     | ALTER USER clear_privileges alter_user_list # AlterUser
+     ;
 
 alter_user_list: user PASSWORD EXPIRE_SYM
                | alter_user_list ',' user PASSWORD EXPIRE_SYM ;
