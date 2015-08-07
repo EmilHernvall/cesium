@@ -11,7 +11,6 @@ public enum MySQLType
     DOUBLE,
     FLOAT,
     BIT,
-    BOOLEAN,
     CHAR,
     NCHAR,
     BINARY,

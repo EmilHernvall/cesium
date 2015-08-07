@@ -680,8 +680,12 @@ ULONGLONG_NUM : '(ulonglong)' ;
 UNDERSCORE_CHARSET : '(_charset)' ;
 
 query: EOF
+     | directive
      | verb_clause ';' opt_end_of_input
      | verb_clause EOF ;
+
+directive: DASHDASHDIRECTIVE
+         ;
 
 opt_end_of_input: /* empty */
                 | EOF ;
@@ -1510,7 +1514,7 @@ mysqltype: int_type opt_field_length field_options # IntTypes
     | FLOAT_SYM float_options field_options # FloatType
     | BIT_SYM # BitType
     | BIT_SYM field_length # BitTypeWithLength
-    | BOOL_SYM # BoolType
+    | BOOL_SYM # BooleanType
     | BOOLEAN_SYM # BooleanType
     | mysqlchar field_length opt_binary # CharTypeWithLength
     | mysqlchar opt_binary # CharType
@@ -2184,13 +2188,17 @@ expr: expr mysqlor expr
     | expr XOR expr
     | expr mysqland expr
     | NOT_SYM expr
-    | bool_pri IS TRUE_SYM
-    | bool_pri IS mysqlnot TRUE_SYM
-    | bool_pri IS FALSE_SYM
-    | bool_pri IS mysqlnot FALSE_SYM
-    | bool_pri IS UNKNOWN_SYM
-    | bool_pri IS mysqlnot UNKNOWN_SYM
-    | bool_pri ;
+    | bool_pri opt_expr_is_choice
+    ;
+
+opt_expr_is_choice: /* empty */
+                  | IS TRUE_SYM
+                  | IS mysqlnot TRUE_SYM
+                  | IS FALSE_SYM
+                  | IS mysqlnot FALSE_SYM
+                  | IS UNKNOWN_SYM
+                  | IS mysqlnot UNKNOWN_SYM
+                  ;
 
 bool_pri: bool_pri IS NULL_SYM
         | bool_pri IS mysqlnot NULL_SYM
@@ -2199,20 +2207,21 @@ bool_pri: bool_pri IS NULL_SYM
         | bool_pri comp_op all_or_any '(' subselect ')'
         | predicate ;
 
-predicate: bit_expr IN_SYM '(' subselect ')'
-         | bit_expr mysqlnot IN_SYM '(' subselect ')'
-         | bit_expr IN_SYM '(' expr ')'
-         | bit_expr IN_SYM '(' expr ',' expr_list ')'
-         | bit_expr mysqlnot IN_SYM '(' expr ')'
-         | bit_expr mysqlnot IN_SYM '(' expr ',' expr_list ')'
-         | bit_expr BETWEEN_SYM bit_expr AND_SYM predicate
-         | bit_expr mysqlnot BETWEEN_SYM bit_expr AND_SYM predicate
-         | bit_expr SOUNDS_SYM LIKE bit_expr
-         | bit_expr LIKE simple_expr opt_escape
-         | bit_expr mysqlnot LIKE simple_expr opt_escape
-         | bit_expr REGEXP bit_expr
-         | bit_expr mysqlnot REGEXP bit_expr
-         | bit_expr ;
+predicate: bit_expr predicate_clause
+         ;
+
+predicate_clause: /* empty */
+                | opt_not IN_SYM '(' subselect ')'
+                | opt_not IN_SYM '(' expr_list ')'
+                | opt_not BETWEEN_SYM bit_expr AND_SYM predicate
+                | SOUNDS_SYM LIKE bit_expr
+                | opt_not LIKE simple_expr opt_escape
+                | opt_not REGEXP bit_expr
+                ;
+
+opt_not: /* empty */
+       | mysqlnot
+       ;
 
 bit_expr: bit_expr '|' bit_expr
         | bit_expr '&' bit_expr
@@ -2726,21 +2735,22 @@ into_destination: OUTFILE text_string_filesystem opt_load_data_charset opt_field
 
 mysqldo: DO_SYM expr_list ;
 
-drop: DROP opt_temporary table_or_tables if_exists table_list opt_restrict
-    | DROP INDEX_SYM ident ON table_ident opt_index_lock_algorithm
-    | DROP DATABASE if_exists ident
-    | DROP FUNCTION_SYM if_exists ident '.' ident
-    | DROP FUNCTION_SYM if_exists ident
-    | DROP PROCEDURE_SYM if_exists sp_name
-    | DROP USER clear_privileges user_list
-    | DROP VIEW_SYM if_exists table_list opt_restrict
-    | DROP EVENT_SYM if_exists sp_name
-    | DROP TRIGGER_SYM if_exists sp_name
-    | DROP TABLESPACE tablespace_name
-    | DROP TABLESPACE tablespace_name drop_ts_options
-    | DROP LOGFILE_SYM GROUP_SYM logfile_group_name
-    | DROP LOGFILE_SYM GROUP_SYM logfile_group_name drop_ts_options
-    | DROP SERVER_SYM if_exists ident_or_text ;
+drop: DROP opt_temporary table_or_tables if_exists table_list opt_restrict # DropTable
+    | DROP INDEX_SYM ident ON table_ident opt_index_lock_algorithm # DropIndex
+    | DROP DATABASE if_exists ident # DropDatabase
+    | DROP FUNCTION_SYM if_exists ident '.' ident # DropFunctionInDatabase
+    | DROP FUNCTION_SYM if_exists ident # DropFunction
+    | DROP PROCEDURE_SYM if_exists sp_name # DropProcedure
+    | DROP USER clear_privileges user_list # DropUser
+    | DROP VIEW_SYM if_exists table_list opt_restrict # DropView
+    | DROP EVENT_SYM if_exists sp_name # DropEvent
+    | DROP TRIGGER_SYM if_exists sp_name # DropTrigger
+    | DROP TABLESPACE tablespace_name # DropTableSpace
+    | DROP TABLESPACE tablespace_name drop_ts_options # DropTableSpaceWithOptions
+    | DROP LOGFILE_SYM GROUP_SYM logfile_group_name # DropLogFile
+    | DROP LOGFILE_SYM GROUP_SYM logfile_group_name drop_ts_options # DropLogFileWithOptions
+    | DROP SERVER_SYM if_exists ident_or_text # DropServer
+    ;
 
 table_list: table_name
           | table_list ',' table_name ;
@@ -3963,4 +3973,7 @@ TEXT_STRING : '"' ('\\"' | ~'"')* '"'
 DECIMAL_NUM : '(decimal)' ;
 LONG_NUM : '(longnum)' ;
 
+DASHDASHDIRECTIVE: '-- %' (~[\r\n])+;
+DASHDASHCOMMENT: '-- ' ~'%' (~[\r\n])+ -> skip;
+HASHCOMMENT: '#' (~[\r\n])+ -> skip;
 WS: [ \n\t\r]+ -> skip;

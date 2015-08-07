@@ -27,6 +27,16 @@ public class Table
         columns.put(column.getName(), column);
     }
 
+    public Column getColumn(String name)
+    {
+        return columns.get(name);
+    }
+
+    public void removeColumn(String name)
+    {
+        columns.remove(name);
+    }
+
     public void addIndex(Index index)
     {
         indices.put(index.getName(), index);

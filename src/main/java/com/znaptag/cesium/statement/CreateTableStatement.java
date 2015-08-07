@@ -18,4 +18,11 @@ public class CreateTableStatement implements Statement
         System.out.println("CREATE TABLE");
         tableDefinition.print();
     }
+
+    @Override
+    public void execute(Schema schema)
+    {
+        //print();
+        schema.addTable(tableDefinition);
+    }
 }
