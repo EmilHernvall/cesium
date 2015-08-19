@@ -9,6 +9,10 @@ public class TypeSpec
         this.type = type;
     }
 
+    public void setFromTypeString(String typeString)
+    {
+    }
+
     public void setType(MySQLType v) { this.type = v; }
     public MySQLType getType() { return type; }
 

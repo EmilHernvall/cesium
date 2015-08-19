@@ -3,7 +3,7 @@ package com.znaptag.cesium.schema;
 import java.util.Map;
 import java.util.LinkedHashMap;
 
-public class Table
+public class Table implements Comparable<Table>
 {
     private String name = null;
     private Map<String, Column> columns = null;
@@ -42,14 +42,28 @@ public class Table
         indices.put(index.getName(), index);
     }
 
+    public Index getIndex(String name)
+    {
+        return indices.get(name);
+    }
+
     public void print()
     {
         System.out.println(name);
         for (Column column : columns.values()) {
             System.out.println("\t" + column);
         }
+        if (primaryKey != null) {
+            System.out.println("\t" + primaryKey);
+        }
         for (Index index : indices.values()) {
             System.out.println("\t" + index);
         }
+    }
+
+    @Override
+    public int compareTo(Table table)
+    {
+        return name.compareTo(table.name);
     }
 }

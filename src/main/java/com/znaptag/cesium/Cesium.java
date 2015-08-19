@@ -27,6 +27,7 @@ public class Cesium
 
     static {
         addCommand(new DumpCommand());
+        addCommand(new StatusCommand());
     }
 
     private static void addCommand(Command command)

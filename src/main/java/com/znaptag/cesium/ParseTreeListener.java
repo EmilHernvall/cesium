@@ -104,7 +104,6 @@ public class ParseTreeListener extends MySQLBaseListener
         String key = text.substring(0, pos).trim().toLowerCase();
         String value = text.substring(pos+1).trim();
         directives.put(key, value);
-        System.out.println(key + ": " + value);
     }
 
     @Override

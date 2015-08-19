@@ -12,6 +12,7 @@ project.ext {
 
 dependencies {
     antlr "org.antlr:antlr4:4.5.1" // use ANTLR version 4
+    runtime group: 'mysql', name: 'mysql-connector-java', version: '5.1.6'
 }
 
 task initProject {

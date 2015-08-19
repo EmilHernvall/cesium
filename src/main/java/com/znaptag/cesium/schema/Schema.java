@@ -1,5 +1,8 @@
 package com.znaptag.cesium.schema;
 
+import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -25,6 +28,11 @@ public class Schema
     public Table getTable(String tableName)
     {
         return tables.get(tableName);
+    }
+
+    public List<Table> getTables()
+    {
+        return Collections.unmodifiableList(new ArrayList<>(tables.values()));
     }
 
     public void print()

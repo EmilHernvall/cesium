@@ -1,5 +1,7 @@
 package com.znaptag.cesium.schema;
 
+import java.util.regex.*;
+
 public class IntegerTypeSpec extends TypeSpec
 {
     private int length = 0;
@@ -9,6 +11,23 @@ public class IntegerTypeSpec extends TypeSpec
     public IntegerTypeSpec(MySQLType type)
     {
         super(type);
+    }
+
+    @Override
+    public void setFromTypeString(String typeString)
+    {
+        Pattern p = Pattern.compile("^([A-Za-z0-9]+)\\(([^)]+)\\)( unsigned)?$");
+        Matcher m = p.matcher(typeString);
+
+        MySQLType type = null;
+        if (m.matches()) {
+            String typeName = m.group(1);
+            setLength(Integer.parseInt(m.group(2)));
+            String unsigned = m.group(3);
+            if (" unsigned".equalsIgnoreCase(unsigned)) {
+                setSigned(false);
+            }
+        }
     }
 
     public void setLength(int v) { this.length = v; }
