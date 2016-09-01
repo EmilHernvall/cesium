@@ -35,7 +35,6 @@ task initProject {
 compileJava.dependsOn initProject
 
 generateGrammarSource {
-    source = "src/main/grammar"
     includes = ["MySQL.g4"]
     arguments += ["-package","com.znaptag.cesium.parser"]
 }
