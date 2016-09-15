@@ -381,7 +381,8 @@ public class ParseTreeListener extends MySQLBaseListener
     @Override
     public void enterKeyComment(MySQLParser.KeyCommentContext ctx)
     {
-        currentIndex.setComment(ctx.getText());
+        String txt = ctx.getText();
+        currentIndex.setComment(txt.substring(1, txt.length()-1));
     }
 
     @Override
@@ -429,8 +430,18 @@ public class ParseTreeListener extends MySQLBaseListener
     }
 
     @Override
-    public void enterCreate_table_option(MySQLParser.Create_table_optionContext ctx)
+    public void enterEngineTableOption(MySQLParser.EngineTableOptionContext ctx)
     {
+        currentTable.setEngine(ctx.storage_engines().getText());
+    }
+
+    @Override
+    public void enterCharsetTableOption(MySQLParser.CharsetTableOptionContext ctx)
+    {
+        String charset = ctx.default_charset().charset_name_or_default().getText();
+        if (!"DEFAULT".equals(charset)) {
+            currentTable.setCharset(charset);
+        }
     }
 
     //
@@ -828,6 +839,7 @@ public class ParseTreeListener extends MySQLBaseListener
             throw new RuntimeException("ERROR 1063 (42000): Incorrect column specifier");
         }
         currentColumn.setAutoIncrement(true);
+        currentColumn.setAllowNull(false);
     }
 
     @Override
@@ -842,6 +854,7 @@ public class ParseTreeListener extends MySQLBaseListener
     public void enterPrimaryKeyAttribute(MySQLParser.PrimaryKeyAttributeContext ctx)
     {
         currentColumn.setPrimaryKey(true);
+        currentColumn.setAllowNull(false);
     }
 
     @Override

@@ -1,5 +1,12 @@
 package com.znaptag.cesium.schema;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.znaptag.cesium.statement.AlterTableStatement.Action;
+import com.znaptag.cesium.statement.AlterTableStatement.ModifyColumnAction;
+import com.znaptag.cesium.statement.Statement;
+
 public class Column
 {
     private String name = null;
@@ -51,5 +58,58 @@ public class Column
             (defaultValue != null ? " DEFAULT " + defaultValue : "") +
             (comment != null ? " COMMENT " + comment : "") +
             (collate != null ? " COLLATE " + collate : "");
+    }
+
+    public Action differenceTo(Column otherColumn)
+    {
+        boolean changed = false;
+
+        if (!typeSpec.equals(otherColumn.typeSpec)) {
+            //System.out.println("\t\tTYPE: " + typeSpec + " => " + otherColumn.typeSpec);
+            changed = true;
+        }
+
+        if (allowNull != otherColumn.allowNull) {
+            //System.out.println("\t\tNULL: " + allowNull + " => " + otherColumn.allowNull);
+            changed = true;
+        }
+
+        //if (defaultValue != null && !defaultValue.equals(otherColumn.defaultValue)) {
+        //    System.out.println("\t\tDEFAULT: " + defaultValue + " => " + otherColumn.defaultValue);
+        //}
+
+        if (autoIncrement != otherColumn.autoIncrement) {
+            //System.out.println("\t\tAUTOINCREMENT: " + autoIncrement + " => " + otherColumn.autoIncrement);
+            changed = true;
+        }
+
+        if (primaryKey != otherColumn.primaryKey) {
+            //System.out.println("\t\tPRIMARYKEY: " + primaryKey + " => " + otherColumn.primaryKey);
+            changed = true;
+        }
+
+        if (uniqueKey != otherColumn.uniqueKey) {
+            //System.out.println("\t\tUNIQUEKEY: " + primaryKey + " => " + otherColumn.primaryKey);
+            changed = true;
+        }
+
+        if (comment != null && !comment.equals(otherColumn.comment)) {
+            //System.out.println("\t\tCOMMENT: " + comment + " => " + otherColumn.comment);
+            changed = true;
+        }
+
+        if (collate != null && !collate.equals(otherColumn.collate)) {
+            //System.out.println("\t\tCOLLATE: " + collate + " => " + otherColumn.collate);
+            changed = true;
+        }
+
+        List<Statement> ddl = new ArrayList<>();
+        if (changed) {
+            ModifyColumnAction action = new ModifyColumnAction();
+            action.setColumnDefinition(otherColumn);
+            return action;
+        }
+
+        return null;
     }
 }

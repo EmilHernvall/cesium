@@ -7,7 +7,8 @@ import java.util.HashMap;
 import java.util.regex.*;
 import java.io.File;
 import java.io.FileInputStream;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
@@ -22,6 +23,8 @@ import com.znaptag.cesium.*;
 import com.znaptag.cesium.parser.*;
 import com.znaptag.cesium.schema.*;
 import com.znaptag.cesium.statement.*;
+import com.znaptag.cesium.command.*;
+import com.znaptag.cesium.repository.*;
 import com.znaptag.cesium.online.SchemaFetcher;
 
 public class StatusCommand extends AbstractCommand
@@ -45,11 +48,26 @@ public class StatusCommand extends AbstractCommand
     {
         Class.forName("com.mysql.jdbc.Driver").newInstance();
 
-        String dsn = "jdbc:mysql://172.17.0.4/znaptag?user=znaptag&password=znaptag&characterEncoding=utf8";
+        String dsn = "jdbc:mysql://172.17.0.2/znaptag?user=znaptag&password=znaptag&characterEncoding=utf8";
+        Schema onlineSchema;
         try (Connection conn = DriverManager.getConnection(dsn)) {
             SchemaFetcher fetcher = new SchemaFetcher(conn);
-            Schema schema = fetcher.retrieve();
-            schema.print();
+            onlineSchema = fetcher.retrieve();
         }
+
+        File startFile = new File(args[1]);
+
+        Schema localSchema = new Schema();
+
+        DiffWalker walker = new DiffWalker();
+        List<Statement> statements = walker.walk(startFile);
+
+        System.out.println("Executing statements:");
+        for (Statement statement : statements) {
+            //statement.print();
+            statement.execute(localSchema);
+        }
+
+        localSchema.differenceTo(onlineSchema);
     }
 }

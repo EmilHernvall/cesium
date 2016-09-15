@@ -2,6 +2,15 @@ package com.znaptag.cesium.schema;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.znaptag.cesium.statement.Statement;
+import com.znaptag.cesium.statement.AlterTableStatement;
+import com.znaptag.cesium.statement.AlterTableStatement.Action;
+import com.znaptag.cesium.statement.AlterTableStatement.AddColumnAction;
+import com.znaptag.cesium.statement.AlterTableStatement.DropColumnAction;
+import com.znaptag.cesium.util.SetDifference;
 
 public class Table implements Comparable<Table>
 {
@@ -9,6 +18,9 @@ public class Table implements Comparable<Table>
     private Map<String, Column> columns = null;
     private Index primaryKey;
     private Map<String, Index> indices;
+    private String charset = null;
+    private String collate = null;
+    private String engine = null;
 
     public Table()
     {
@@ -18,6 +30,15 @@ public class Table implements Comparable<Table>
 
     public void setName(String v) { this.name = v; }
     public String getName() { return name; }
+
+    public void setCharset(String v) { this.charset = v; }
+    public String getCharset() { return charset; }
+
+    public void setCollate(String v) { this.collate = v; }
+    public String getCollate() { return collate; }
+
+    public void setEngine(String v) { this.engine = v; }
+    public String getEngine() { return engine; }
 
     public void setPrimaryKey(Index v) { this.primaryKey = v; }
     public Index getPrimaryKey() { return primaryKey; }
@@ -59,11 +80,64 @@ public class Table implements Comparable<Table>
         for (Index index : indices.values()) {
             System.out.println("\t" + index);
         }
+        System.out.println("\tcharset=" + charset);
+        System.out.println("\tcollation=" + collate);
+        System.out.println("\tengine=" + engine);
     }
 
     @Override
     public int compareTo(Table table)
     {
         return name.compareTo(table.name);
+    }
+
+    public Statement differenceTo(Table otherTable)
+    {
+        SetDifference<String> diff = SetDifference.calculate(columns.keySet(),
+                                                             otherTable.columns.keySet());
+
+        AlterTableStatement stmt = new AlterTableStatement();
+        stmt.setTableName(name);
+
+        // TODO: Find potential renames?
+        if (diff.onlyInSecond().size() > 0) {
+            //System.out.println("\t\tAdded columns:");
+            for (String col : diff.onlyInSecond()) {
+                Column secondCol = otherTable.columns.get(col);
+                //System.out.println("\t\t" + col);
+
+                AddColumnAction action = new AddColumnAction();
+                action.setColumnDefinition(secondCol);
+                stmt.addAction(action);
+            }
+        }
+
+        if (diff.onlyInFirst().size() > 0) {
+            //System.out.println("\t\tRemoved columns:");
+            for (String col : diff.onlyInFirst()) {
+                //System.out.println("\t\t" + col);
+
+                DropColumnAction action = new DropColumnAction();
+                action.setName(col);
+                stmt.addAction(action);
+            }
+        }
+
+        //System.out.println("\t\tCommon columns:");
+        for (String column : diff.inBoth()) {
+            Column firstCol = columns.get(column);
+            Column secondCol = otherTable.columns.get(column);
+            //System.out.println("\t\t" + column);
+            Action action = firstCol.differenceTo(secondCol);
+            if (action != null) {
+                stmt.addAction(action);
+            }
+        }
+
+        if (stmt.getActions().size() > 0) {
+            return stmt;
+        }
+
+        return null;
     }
 }

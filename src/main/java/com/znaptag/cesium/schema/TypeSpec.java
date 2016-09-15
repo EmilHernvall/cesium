@@ -21,4 +21,9 @@ public class TypeSpec
     {
         return type.toString();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return type == ((TypeSpec)obj).type;
+    }
 }

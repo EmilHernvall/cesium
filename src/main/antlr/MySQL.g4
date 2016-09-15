@@ -1417,36 +1417,37 @@ create_table_options: create_table_option
                     | create_table_option create_table_options
                     | create_table_option ',' create_table_options ;
 
-create_table_option: ENGINE_SYM opt_equal storage_engines
-                   | MAX_ROWS opt_equal ulonglong_num
-                   | MIN_ROWS opt_equal ulonglong_num
-                   | AVG_ROW_LENGTH opt_equal ulong_num
-                   | PASSWORD opt_equal text_string_sys
-                   | COMMENT_SYM opt_equal text_string_sys
-                   | AUTO_INC opt_equal ulonglong_num
-                   | PACK_KEYS_SYM opt_equal ulong_num
-                   | PACK_KEYS_SYM opt_equal DEFAULT
-                   | STATS_AUTO_RECALC_SYM opt_equal ulong_num
-                   | STATS_AUTO_RECALC_SYM opt_equal DEFAULT
-                   | STATS_PERSISTENT_SYM opt_equal ulong_num
-                   | STATS_PERSISTENT_SYM opt_equal DEFAULT
-                   | STATS_SAMPLE_PAGES_SYM opt_equal ulong_num
-                   | STATS_SAMPLE_PAGES_SYM opt_equal DEFAULT
-                   | CHECKSUM_SYM opt_equal ulong_num
-                   | TABLE_CHECKSUM_SYM opt_equal ulong_num
-                   | DELAY_KEY_WRITE_SYM opt_equal ulong_num
-                   | ROW_FORMAT_SYM opt_equal row_types
-                   | UNION_SYM opt_equal '(' opt_table_list ')'
-                   | default_charset
-                   | default_collation
-                   | INSERT_METHOD opt_equal merge_insert_types
-                   | DATA_SYM DIRECTORY_SYM opt_equal text_string_sys
-                   | INDEX_SYM DIRECTORY_SYM opt_equal text_string_sys
-                   | TABLESPACE ident
-                   | STORAGE_SYM DISK_SYM
-                   | STORAGE_SYM MEMORY_SYM
-                   | CONNECTION_SYM opt_equal text_string_sys
-                   | KEY_BLOCK_SIZE opt_equal ulong_num ;
+create_table_option: ENGINE_SYM opt_equal storage_engines # EngineTableOption
+                   | MAX_ROWS opt_equal ulonglong_num # MaxRowsTableOption
+                   | MIN_ROWS opt_equal ulonglong_num # MinRowsTableOption
+                   | AVG_ROW_LENGTH opt_equal ulong_num # AvgRowLengthTableOption
+                   | PASSWORD opt_equal text_string_sys # PasswordTableOption
+                   | COMMENT_SYM opt_equal text_string_sys # CommentTableOption
+                   | AUTO_INC opt_equal ulonglong_num # AutoIncrementTableOption
+                   | PACK_KEYS_SYM opt_equal ulong_num # PackKeysTableOption
+                   | PACK_KEYS_SYM opt_equal DEFAULT # PackKeysDefaultTableOption
+                   | STATS_AUTO_RECALC_SYM opt_equal ulong_num # StatsAutoRecalcTableOption
+                   | STATS_AUTO_RECALC_SYM opt_equal DEFAULT # StatsAutoRecalcDefaultTableOption
+                   | STATS_PERSISTENT_SYM opt_equal ulong_num # StatsPersistentTableOption
+                   | STATS_PERSISTENT_SYM opt_equal DEFAULT # StatsPersistentDefaultTableOption
+                   | STATS_SAMPLE_PAGES_SYM opt_equal ulong_num # StatsSamplePagesTableOption
+                   | STATS_SAMPLE_PAGES_SYM opt_equal DEFAULT # StatsSamplePagesDefaultTableOption
+                   | CHECKSUM_SYM opt_equal ulong_num # ChecksumTableOption
+                   | TABLE_CHECKSUM_SYM opt_equal ulong_num # TableChecksumTableOption
+                   | DELAY_KEY_WRITE_SYM opt_equal ulong_num # DelayKeyWriteTableOption
+                   | ROW_FORMAT_SYM opt_equal row_types # RowFormatTableOption
+                   | UNION_SYM opt_equal '(' opt_table_list ')' # UnionTableOption
+                   | default_charset # CharsetTableOption
+                   | default_collation # CollationTableOption
+                   | INSERT_METHOD opt_equal merge_insert_types # InsertMethodTableOption
+                   | DATA_SYM DIRECTORY_SYM opt_equal text_string_sys # DataDirectoryTableOption
+                   | INDEX_SYM DIRECTORY_SYM opt_equal text_string_sys # IndexDirectoryTableOption
+                   | TABLESPACE ident # TablespaceTableOption
+                   | STORAGE_SYM DISK_SYM # StorageDiskTableOption
+                   | STORAGE_SYM MEMORY_SYM # StorageMemoryTableOption
+                   | CONNECTION_SYM opt_equal text_string_sys # ConnectionTableOption
+                   | KEY_BLOCK_SIZE opt_equal ulong_num # KeyBlockSizeTableOption
+                   ;
 
 default_charset: opt_default charset opt_equal charset_name_or_default ;
 
@@ -3128,16 +3129,17 @@ signed_literal: literal
               | '+' num_literal
               | '-' num_literal ;
 
-literal: text_literal
-       | num_literal
-       | temporal_literal
-       | NULL_SYM
-       | FALSE_SYM
-       | TRUE_SYM
-       | HEX_NUM
-       | BIN_NUM
-       | UNDERSCORE_CHARSET HEX_NUM
-       | UNDERSCORE_CHARSET BIN_NUM ;
+literal: text_literal # TextLiteral
+       | num_literal # NumLiteral
+       | temporal_literal # TemporalLiteral
+       | NULL_SYM # NullLiteral
+       | FALSE_SYM # FalseLiteral
+       | TRUE_SYM # TrueLiteral
+       | HEX_NUM # HexLiteral
+       | BIN_NUM # BinLiteral
+       | UNDERSCORE_CHARSET HEX_NUM # UCHexLiteral
+       | UNDERSCORE_CHARSET BIN_NUM # UCBinLiteral
+       ;
 
 num_literal: NUM
            | LONG_NUM

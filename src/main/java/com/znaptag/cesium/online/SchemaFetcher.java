@@ -63,7 +63,27 @@ public class SchemaFetcher
             try (ResultSet rs = stmt.getResultSet()) {
                 while (rs.next()) {
                     Table table = new Table();
-                    table.setName(rs.getString(1));
+                    String name = rs.getString("Name");
+                    table.setName(name);
+                    String engine = rs.getString("Engine");
+                    table.setEngine(engine);
+                    // rs.getInt("Version");
+                    // rs.getString("Row_format");
+                    // rs.getInt("Rows");
+                    // rs.getInt("Avg_row_length");
+                    // rs.getInt("Data_length");
+                    // rs.getInt("Max_data_length");
+                    // rs.getInt("Index_length");
+                    // rs.getInt("Data_free");
+                    int autoincrement = rs.getInt("Auto_increment");
+                    // rs.getTimestamp("Create_time");
+                    // rs.getTimestamp("Update_time");
+                    // rs.getTimestamp("Check_time");
+                    String collate = rs.getString("Collation");
+                    table.setCollate(collate);
+                    // rs.getString("Checksum");
+                    // rs.getString("Create_options");
+                    // rs.getString("Comment");
                     schema.addTable(table);
                 }
             }
@@ -78,11 +98,19 @@ public class SchemaFetcher
                         column.setName(rs.getString("Field"));
                         String type = rs.getString("Type");
                         column.setTypeSpec(parseType(type));
-                        // rs.getString("Collation");
-                        // rs.getString("Null");
+                        String collate = rs.getString("Collation");
+                        if (collate != null && !collate.equals(table.getCollate())) {
+                            column.setCollate(collate);
+                        }
+                        String nullable = rs.getString("Null");
+                        column.setAllowNull("YES".equals(nullable));
                         // rs.getString("Key");
-                        // rs.getString("Default");
-                        // rs.getString("Extra");
+                        String defaultValue = rs.getString("Default");
+                        column.setDefaultValue(defaultValue);
+                        String extra = rs.getString("Extra");
+                        if (extra.contains("auto_increment")) {
+                            column.setAutoIncrement(true);
+                        }
                         // rs.getString("Privileges");
                         String comment = rs.getString("Comment");
                         if (!"".equals(comment)) {

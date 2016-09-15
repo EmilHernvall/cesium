@@ -142,6 +142,8 @@ public class AlterTableStatement implements Statement
         actions.add(action);
     }
 
+    public List<Action> getActions() { return actions; }
+
     public void setTableName(String v) { this.tableName = v; }
     public String getTableName() { return tableName; }
 
