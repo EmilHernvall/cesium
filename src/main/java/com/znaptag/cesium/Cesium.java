@@ -26,6 +26,7 @@ public class Cesium
     private final static Map<String, Command> COMMANDS = new HashMap<>();
 
     static {
+        addCommand(new DatabaseCommand());
         addCommand(new DumpCommand());
         addCommand(new StatusCommand());
     }

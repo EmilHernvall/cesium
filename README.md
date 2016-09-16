@@ -11,7 +11,8 @@ Commands
 
 Cesium uses a git-like command line interface.
 
- * cs init - Initialize cesium from an existing database
+ * cs db - Manage your database configurations
+ * cs init - Initialize a cesium repository
  * cs import - Initialize the database from a cesium repository
  * cs console - Open a console session to the current database
  * cs commit - Commits current changes to database to the cesium repository as
