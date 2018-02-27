@@ -34,6 +34,15 @@ public class GlobalConfig
 
         public void setDatabaseName(String v) { this.dbname = v; }
         public String getDatabaseName() { return dbname; }
+
+        public String getConnectionString()
+        {
+            return String.format("jdbc:mysql://%s/znaptag?user=%s&password=%s&characterEncoding=utf8",
+                                 host,
+                                 user,
+                                 password,
+                                 dbname);
+        }
     }
 
     private Map<String, Database> databases;
@@ -98,6 +107,11 @@ public class GlobalConfig
     public Collection<Database> getDatabases()
     {
         return databases.values();
+    }
+
+    public Database getDatabase(String name)
+    {
+        return databases.get(name);
     }
 
     public void addDatabase(Database db)

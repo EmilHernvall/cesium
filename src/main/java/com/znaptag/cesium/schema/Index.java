@@ -50,18 +50,23 @@ public class Index
     }
 
     public void setName(String v) { this.name = v; }
+    public Index withName(String v) { this.name = v; return this; }
     public String getName() { return name; }
 
     public void setKeyType(KeyType v) { this.keyType = v; }
+    public Index withKeyType(KeyType v) { this.keyType = v; return this; }
     public KeyType getKeyType() { return keyType; }
 
     public void setAlgorithm(String v) { this.algorithm = v; }
+    public Index withAlgorithm(String v) { this.algorithm = v; return this; }
     public String getAlgorithm() { return algorithm; }
 
     public void setBlockSize(String v) { this.blockSize = v; }
+    public Index withBlockSize(String v) { this.blockSize = v; return this; }
     public String getBlockSize() { return blockSize; }
 
     public void setComment(String v) { this.comment = v; }
+    public Index withComment(String v) { this.comment = v; return this; }
     public String getComment() { return comment; }
 
     public void addPart(String name, int length)
@@ -70,6 +75,12 @@ public class Index
         part.setName(name);
         part.setLength(length);
         parts.add(part);
+    }
+
+    public Index withPart(String name, int length)
+    {
+        addPart(name, length);
+        return this;
     }
 
     @Override

@@ -13,14 +13,14 @@ Cesium uses a git-like command line interface.
 
  * cs db - Manage your database configurations
  * cs init - Initialize a cesium repository
- * cs import - Initialize the database from a cesium repository
- * cs console - Open a console session to the current database
- * cs commit - Commits current changes to database to the cesium repository as
-   a new patch
+ * cs deploy - Create a new database based on the schema described by the
+   repository, or upgrade an existing database
+ * cs retrieve - Retrieve the schema from a database and commit it to the
+   repository
+ * cs console - Open a console session to a database
+ * cs patch - Add a new patch to the repository
  * cs status - Show current changes to database compared to the cesium
    repository
- * cs upgrade - Bring the current database up to date by applying new cesium
-   patches
  * cs dump - Dump the schema as described by the cesium repository, or by the
    active database
  * cs tree - Prints the patch tree, highlighting which of the patches that have

@@ -28,28 +28,44 @@ import com.znaptag.cesium.repository.*;
 import com.znaptag.cesium.util.*;
 import com.znaptag.cesium.online.*;
 
-public class StatusCommand extends AbstractCommand
+public class DeployCommand extends AbstractCommand
 {
     private GlobalConfig config = GlobalConfig.loadDefaultConfig();
 
-    public StatusCommand()
+    private final Table VERSION_TABLE = new Table()
+        .withName("cesiumversion")
+        .withColumn(new Column()
+                    .withName("cesiumversion_name")
+                    .withTypeSpec(new TypeSpec(MySQLType.TEXT)))
+        .withColumn(new Column()
+                    .withName("cesiumversion_description")
+                    .withTypeSpec(new TypeSpec(MySQLType.TEXT)))
+        .withColumn(new Column()
+                    .withName("cesiumversion_timestamp")
+                    .withTypeSpec(new TypeSpec(MySQLType.TIMESTAMP)))
+        .withPrimaryKey(new Index()
+                        .withKeyType(Index.KeyType.PRIMARY)
+                        .withPart("cesiumversion_name", 0));
+
+    public DeployCommand()
     {
     }
 
     @Override
-    public String getName() { return "status"; }
+    public String getName() { return "deploy"; }
 
     @Override
     public String getDescription()
     {
-        return "Show current changes to database compared to the cesium repository";
+        return "Create a new database based on the schema described by the " +
+            "repository, or upgrade an existing database";
     }
 
     @Override
     public void execute(String[] args)
     throws Exception
     {
-        if (args.length < 3) {
+        /*if (args.length < 3) {
             return;
         }
 
@@ -76,6 +92,6 @@ public class StatusCommand extends AbstractCommand
             statement.execute(localSchema);
         }
 
-        localSchema.differenceTo(onlineSchema);
+        localSchema.differenceTo(onlineSchema);*/
     }
 }

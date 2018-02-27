@@ -24,30 +24,39 @@ public class Column
     }
 
     public void setName(String v) { this.name = v; }
+    public Column withName(String v) { this.name = v; return this; }
     public String getName() { return name; }
 
     public void setTypeSpec(TypeSpec v) { this.typeSpec = v; }
+    public Column withTypeSpec(TypeSpec v) { this.typeSpec = v; return this; }
     public TypeSpec getTypeSpec() { return typeSpec; }
 
     public void setAllowNull(boolean v) { this.allowNull = v; }
+    public Column withAllowNull(boolean v) { this.allowNull = v; return this; }
     public boolean getAllowNull() { return allowNull; }
 
     public void setDefaultValue(String v) { this.defaultValue = v; }
+    public Column withDefaultValue(String v) { this.defaultValue = v; return this; }
     public String getDefaultValue() { return defaultValue; }
 
     public void setAutoIncrement(boolean v) { this.autoIncrement = v; }
+    public Column withAutoIncrement(boolean v) { this.autoIncrement = v; return this; }
     public boolean getAutoIncrement() { return autoIncrement; }
 
     public void setPrimaryKey(boolean v) { this.primaryKey = v; }
+    public Column withPrimaryKey(boolean v) { this.primaryKey = v; return this; }
     public boolean getPrimaryKey() { return primaryKey; }
 
     public void setUniqueKey(boolean v) { this.uniqueKey = v; }
+    public Column withUniqueKey(boolean v) { this.uniqueKey = v; return this; }
     public boolean getUniqueKey() { return uniqueKey; }
 
     public void setComment(String v) { this.comment = v; }
+    public Column withComment(String v) { this.comment = v; return this; }
     public String getComment() { return comment; }
 
     public void setCollate(String v) { this.collate = v; }
+    public Column withCollate(String v) { this.collate = v; return this; }
     public String getCollate() { return collate; }
 
     @Override

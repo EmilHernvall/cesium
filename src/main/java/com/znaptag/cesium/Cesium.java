@@ -23,17 +23,33 @@ import com.znaptag.cesium.command.*;
 
 public class Cesium
 {
-    private final static Map<String, Command> COMMANDS = new HashMap<>();
+    private final static List<Command> COMMANDS = new ArrayList<>();
+    private final static Map<String, Command> COMMAND_LOOKUP = new HashMap<>();
 
     static {
         addCommand(new DatabaseCommand());
         addCommand(new DumpCommand());
         addCommand(new StatusCommand());
+        addCommand(new DeployCommand());
     }
 
     private static void addCommand(Command command)
     {
-        COMMANDS.put(command.getName(), command);
+        COMMANDS.add(command);
+        for (String alias : command.getAliases()) {
+            COMMAND_LOOKUP.put(alias, command);
+        }
+    }
+
+    private static String rightPad(String str, int n)
+    {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append(str);
+        for (int i = 0; i < n - str.length(); i++) {
+            buffer.append(" ");
+        }
+
+        return buffer.toString();
     }
 
     public static void printUsage()
@@ -41,8 +57,10 @@ public class Cesium
         System.out.println("usage: cs <command>");
         System.out.println();
 
-        for (Command command : COMMANDS.values()) {
-            System.out.println("\t" + command.getName() + "\t\t" + command.getDescription());
+        for (Command command : COMMANDS) {
+            System.out.println("    " +
+                    rightPad(command.getName(), 20) +
+                    command.getDescription());
         }
     }
 
@@ -54,7 +72,7 @@ public class Cesium
             return;
         }
 
-        Command command = COMMANDS.get(args[0]);
+        Command command = COMMAND_LOOKUP.get(args[0]);
         if (command == null) {
             System.out.println("no command " + args[0]);
             return;

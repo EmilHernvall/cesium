@@ -29,23 +29,34 @@ public class Table implements Comparable<Table>
     }
 
     public void setName(String v) { this.name = v; }
+    public Table withName(String v) { this.name = v; return this; }
     public String getName() { return name; }
 
     public void setCharset(String v) { this.charset = v; }
+    public Table withCharset(String v) { this.charset = v; return this; }
     public String getCharset() { return charset; }
 
     public void setCollate(String v) { this.collate = v; }
+    public Table withCollate(String v) { this.collate = v; return this; }
     public String getCollate() { return collate; }
 
     public void setEngine(String v) { this.engine = v; }
+    public Table withEngine(String v) { this.engine = v; return this; }
     public String getEngine() { return engine; }
 
     public void setPrimaryKey(Index v) { this.primaryKey = v; }
+    public Table withPrimaryKey(Index v) { this.primaryKey = v; return this; }
     public Index getPrimaryKey() { return primaryKey; }
 
     public void addColumn(Column column)
     {
         columns.put(column.getName(), column);
+    }
+
+    public Table withColumn(Column column)
+    {
+        columns.put(column.getName(), column);
+        return this;
     }
 
     public Column getColumn(String name)
@@ -61,6 +72,12 @@ public class Table implements Comparable<Table>
     public void addIndex(Index index)
     {
         indices.put(index.getName(), index);
+    }
+
+    public Table withIndex(Index index)
+    {
+        indices.put(index.getName(), index);
+        return this;
     }
 
     public Index getIndex(String name)

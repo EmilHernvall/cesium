@@ -35,6 +35,9 @@ public class DatabaseCommand extends AbstractCommand
     public String getName() { return "database"; }
 
     @Override
+    public String[] getAliases() { return new String[] { "db", "database" }; }
+
+    @Override
     public String getDescription()
     {
         return "Manage your database configurations";
