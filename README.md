@@ -6,6 +6,19 @@ control. The database schema is stored as a series of patches in your standard
 source repository, and Cesium helps you keep manage the changes and facilitates
 a multi-branch workflow.
 
+This is different from most attempts at versioning SQL schemas in that Cesium
+actually understands your SQL. It has a complete MySQL dialect SQL parser built
+in, based on grammar extracted from the MySQL source code. It can construct an
+internal representation of your schema, to which DDL statements can be applied.
+For that reason, Cesium doesn't even need a database connection to figure out
+what has changed. This makes Cesium an ideal complement to a multi-branch
+development workflow: the internal representation allows Cesium to determine
+whether patches contains conflicts, and in many cases it can resolve those
+conflicts automatically.
+
+Cesium is work in progress, and this README is more of design document than an
+accurate representation of what's currently here.
+
 Commands
 --------
 
@@ -26,24 +39,6 @@ Cesium uses a git-like command line interface.
  * cs tree - Prints the patch tree, highlighting which of the patches that have
    been applied to the active database
  * cs merge - Unify a diverging tree
-
-Database state
---------------
-
-Cesium uses a table called `version` in the database to keep track of which
-patches that have been applied. The structure is as follows:
-
-    CREATE TABLE version (
-        version_hash CHAR (32) NOT NULL,
-        version_description TEXT NOT NULL,
-        version_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (version_hash)
-    ) ENGINE=InnoDB CHARSET=utf8 COLLATE=utf8_general_ci;
-
-This allows cesium to be intelligent about what changes that have been made to
-the database. A in-memory representation can be constructed by applying the
-patches listed, which can then be compared to the actual database to find out
-what has changed compared to the repository.
 
 Structure
 ---------

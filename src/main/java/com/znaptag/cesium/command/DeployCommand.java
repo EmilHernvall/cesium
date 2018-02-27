@@ -33,19 +33,19 @@ public class DeployCommand extends AbstractCommand
     private GlobalConfig config = GlobalConfig.loadDefaultConfig();
 
     private final Table VERSION_TABLE = new Table()
-        .withName("cesiumversion")
+        .withName("csver")
         .withColumn(new Column()
-                    .withName("cesiumversion_name")
+                    .withName("csver_name")
                     .withTypeSpec(new TypeSpec(MySQLType.TEXT)))
         .withColumn(new Column()
-                    .withName("cesiumversion_description")
+                    .withName("csver_description")
                     .withTypeSpec(new TypeSpec(MySQLType.TEXT)))
         .withColumn(new Column()
-                    .withName("cesiumversion_timestamp")
+                    .withName("csver_timestamp")
                     .withTypeSpec(new TypeSpec(MySQLType.TIMESTAMP)))
         .withPrimaryKey(new Index()
                         .withKeyType(Index.KeyType.PRIMARY)
-                        .withPart("cesiumversion_name", 0));
+                        .withPart("csver_name", 0));
 
     public DeployCommand()
     {
